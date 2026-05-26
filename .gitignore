@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+
+# Uploads
+uploads/remita/*
+uploads/nelfund-lists/*
+!uploads/remita/.gitkeep
+!uploads/nelfund-lists/.gitkeep
+
+# Generated batches
+batches/*
+!batches/.gitkeep
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

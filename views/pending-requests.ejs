@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NELFUND — Pending Refund Requests</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background-color: #f5f7f5;
+            color: #222;
+        }
+
+        .navbar {
+            background-color: #28a745;
+            color: white;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 58px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+
+        .navbar-title { font-size: 16px; font-weight: 700; }
+        .navbar-right { display: flex; align-items: center; gap: 4px; }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 7px 14px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .navbar a:hover { background: rgba(255,255,255,0.18); }
+
+        .navbar .btn-logout {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.35);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 32px auto;
+            padding: 0 24px;
+        }
+
+        .page-heading {
+            font-size: 21px;
+            font-weight: 700;
+            color: #1a5c2a;
+            margin-bottom: 24px;
+            padding-bottom: 14px;
+            border-bottom: 2px solid #c8e6c9;
+        }
+
+        /* ── No requests ── */
+        .no-requests {
+            text-align: center;
+            padding: 60px 40px;
+            background: white;
+            border: 1.5px solid #c8e6c9;
+            border-radius: 10px;
+            color: #777;
+        }
+
+        .no-requests h3 { font-size: 18px; color: #28a745; margin-bottom: 8px; }
+
+        /* ── Request Card ── */
+        .request-card {
+            background: white;
+            border: 1.5px solid #c8e6c9;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(40,167,69,0.07);
+            overflow: hidden;
+        }
+
+        .request-card-header {
+            background: #28a745;
+            color: white;
+            padding: 13px 20px;
+            font-size: 15px;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .request-card-body { padding: 20px; }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .info-item {}
+
+        .info-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #28a745;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .divider {
+            border: none;
+            border-top: 1px solid #e0ede3;
+            margin: 16px 0;
+        }
+
+        /* ── Action Row ── */
+        .action-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.2s, transform 0.1s;
+            letter-spacing: 0.3px;
+        }
+
+        .btn:active { transform: scale(0.98); }
+
+        .btn-view { background-color: #17a2b8; color: white; }
+        .btn-view:hover { background-color: #138496; }
+
+        .btn-approve { background-color: #28a745; color: white; }
+        .btn-approve:hover { background-color: #218838; }
+
+        .btn-reject { background-color: #dc3545; color: white; }
+        .btn-reject:hover { background-color: #c82333; }
+
+        /* ── Modal ── */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active { display: flex; }
+
+        .modal-box {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .modal-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #1a5c2a;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1.5px solid #e0ede3;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            font-size: 22px;
+            cursor: pointer;
+            color: #999;
+            line-height: 1;
+        }
+
+        .modal-close:hover { color: #555; }
+
+        .modal-label {
+            display: block;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #1a5c2a;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #c3dbc9;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            min-height: 110px;
+            resize: vertical;
+            transition: border-color 0.2s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #28a745;
+            box-shadow: 0 0 0 3px rgba(40,167,69,0.12);
+        }
+
+        .btn-submit-reject {
+            width: 100%;
+            margin-top: 16px;
+            padding: 13px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-submit-reject:hover { background: #c82333; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-title">NELFUND Staff Portal</div>
+        <div class="navbar-right">
+            <a href="/staff/dashboard">Dashboard</a>
+            <a href="/staff/logout" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1 class="page-heading">Pending Refund Requests</h1>
+
+        <% if (requests.length === 0) { %>
+            <div class="no-requests">
+                <h3>No Pending Requests</h3>
+                <p>All submitted requests have been processed.</p>
+            </div>
+        <% } else { %>
+            <% requests.forEach(function(request) { %>
+                <div class="request-card">
+                    <div class="request-card-header">
+                        <span>Request #<%= request.request_id %> &mdash; <%= request.full_name %></span>
+                        <span style="font-size:12px; font-weight:400; opacity:0.85;">
+                            <%= new Date(request.submitted_at).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) %>
+                        </span>
+                    </div>
+
+                    <div class="request-card-body">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Reg. Number</div>
+                                <div class="info-value"><%= request.reg_number %></div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Department</div>
+                                <div class="info-value"><%= request.department %></div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Payment Type</div>
+                                <div class="info-value"><%= request.payment_type.replace(/_/g, ' ') %></div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Amount Paid</div>
+                                <div class="info-value">₦<%= parseFloat(request.amount_paid).toLocaleString() %></div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Refund Amount</div>
+                                <div class="info-value">₦<%= parseFloat(request.refund_amount).toLocaleString() %></div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Remita Number</div>
+                                <div class="info-value"><%= request.remita_number %></div>
+                            </div>
+                        </div>
+
+                        <hr class="divider">
+
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Account Name</div>
+                                <div class="info-value"><%= request.account_name %></div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Account Number</div>
+                                <div class="info-value"><%= request.account_number %></div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Bank</div>
+                                <div class="info-value"><%= request.bank_name %></div>
+                            </div>
+                        </div>
+
+                        <hr class="divider">
+
+                        <div class="action-row">
+                            <a href="/uploads/remita/<%= request.file_path.replace(/\\\\/g, '/').split('/').pop() %>"
+                                target="_blank" class="btn btn-view">View Remita Document</a>
+
+                            <form method="POST" action="/staff/verify-request/<%= request.request_id %>"
+                                style="display:inline;">
+                                <input type="hidden" name="action" value="approve">
+                                <button type="submit" class="btn btn-approve"
+                                    onclick="return confirm('Approve this refund request?')">
+                                    &#10003; Approve
+                                </button>
+                            </form>
+
+                            <button class="btn btn-reject"
+                                onclick="showRejectModal('<%= request.request_id %>')">
+                                &#10007; Reject
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        <% } %>
+    </div>
+
+    <!-- Rejection Modal -->
+    <div id="rejectModal" class="modal">
+        <div class="modal-box">
+            <div class="modal-title">
+                <span>Reject Request</span>
+                <span class="modal-close" onclick="closeRejectModal()">&times;</span>
+            </div>
+            <form id="rejectForm" method="POST" action="">
+                <input type="hidden" name="action" value="reject">
+                <label class="modal-label" for="rejection_reason">Reason for Rejection <span style="color:#c0392b">*</span></label>
+                <textarea name="rejection_reason" id="rejection_reason" required
+                    placeholder="Please provide a clear reason for rejecting this request..."></textarea>
+                <button type="submit" class="btn-submit-reject">Submit Rejection</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showRejectModal(requestId) {
+            const modal = document.getElementById('rejectModal');
+            document.getElementById('rejectForm').action = '/staff/verify-request/' + requestId;
+            modal.classList.add('active');
+        }
+
+        function closeRejectModal() {
+            document.getElementById('rejectModal').classList.remove('active');
+            document.getElementById('rejection_reason').value = '';
+        }
+
+        window.addEventListener('click', function(e) {
+            const modal = document.getElementById('rejectModal');
+            if (e.target === modal) closeRejectModal();
+        });
+    </script>
+</body>
+</html>

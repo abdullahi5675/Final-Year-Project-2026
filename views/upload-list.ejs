@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NELFUND — Upload NELFUND List</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background-color: #f5f7f5;
+            color: #222;
+        }
+
+        .navbar {
+            background-color: #28a745;
+            color: white;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 58px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+
+        .navbar-title { font-size: 16px; font-weight: 700; }
+        .navbar-right { display: flex; align-items: center; gap: 4px; }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 7px 14px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .navbar a:hover { background: rgba(255,255,255,0.18); }
+
+        .navbar .btn-logout {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.35);
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 32px auto;
+            padding: 0 24px;
+        }
+
+        .page-heading {
+            font-size: 21px;
+            font-weight: 700;
+            color: #1a5c2a;
+            margin-bottom: 20px;
+        }
+
+        .alert {
+            padding: 14px 16px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            font-size: 13.5px;
+            line-height: 1.55;
+        }
+
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-error { background: #fdf2f3; color: #8b1a27; border: 1px solid #f5c6cb; }
+        .alert-info { background: #e8f5e9; color: #1a5c2a; border: 1px solid #a5d6a7; }
+
+        .form-card {
+            background: white;
+            border: 1.5px solid #c8e6c9;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(40,167,69,0.08);
+        }
+
+        .form-card-header {
+            background: #28a745;
+            color: white;
+            padding: 14px 24px;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+
+        .form-card-body { padding: 24px; }
+
+        .form-group { margin-bottom: 22px; }
+        .form-group:last-child { margin-bottom: 0; }
+
+        label {
+            display: block;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #1a5c2a;
+            margin-bottom: 7px;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #c3dbc9;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            color: #222;
+            background: #fafff9;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #28a745;
+            box-shadow: 0 0 0 3px rgba(40,167,69,0.12);
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px dashed #28a745;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: inherit;
+            background: #f0faf2;
+            cursor: pointer;
+        }
+
+        .field-hint {
+            font-size: 11.5px;
+            color: #777;
+            margin-top: 5px;
+        }
+
+        .requirements-box {
+            background: #e8f5e9;
+            border: 1px solid #a5d6a7;
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 22px;
+            font-size: 13px;
+            color: #1a5c2a;
+        }
+
+        .requirements-box strong { display: block; margin-bottom: 8px; font-size: 13px; }
+
+        .requirements-box ul {
+            margin-left: 18px;
+            line-height: 1.9;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: background-color 0.2s;
+            margin-top: 4px;
+        }
+
+        .btn-submit:hover { background-color: #218838; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-title">NELFUND Staff Portal</div>
+        <div class="navbar-right">
+            <a href="/staff/dashboard">Dashboard</a>
+            <a href="/staff/logout" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1 class="page-heading">Upload NELFUND Approved List</h1>
+
+        <% if (success) { %>
+            <div class="alert alert-success"><%= success %></div>
+        <% } %>
+
+        <% if (error) { %>
+            <div class="alert alert-error"><%= error %></div>
+        <% } %>
+
+        <div class="form-card">
+            <div class="form-card-header">Excel File Upload</div>
+            <div class="form-card-body">
+
+                <div class="requirements-box">
+                    <strong>Required Spreadsheet Column Order:</strong>
+                    <ul>
+                        <li>Column A — Registration Number</li>
+                        <li>Column B — Full Name</li>
+                        <li>Column C — Department</li>
+                        <li>Column D — Level</li>
+                    </ul>
+                    <span style="display:block; margin-top:8px; font-size:12px; color:#555;">
+                        The first row is treated as a header and will be skipped automatically.
+                    </span>
+                </div>
+
+                <form method="POST" action="/staff/upload-list" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="batch_reference">Batch Reference <span style="color:#c0392b">*</span></label>
+                        <input type="text" name="batch_reference" id="batch_reference" required
+                            placeholder="e.g. NELFUND-2024-BATCH-01">
+                        <div class="field-hint">Enter a unique reference name for this upload batch</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="nelfund_file">Select File <span style="color:#c0392b">*</span></label>
+                        <input type="file" name="nelfund_file" id="nelfund_file"
+                            accept=".xlsx,.xls,.csv" required>
+                        <div class="field-hint">Accepted formats: XLSX, XLS, CSV</div>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Upload List</button>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>

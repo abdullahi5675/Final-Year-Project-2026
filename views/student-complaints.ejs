@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NELFUND — My Complaints</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background-color: #f5f7f5;
+            color: #222;
+        }
+
+        .navbar {
+            background-color: #28a745;
+            color: white;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 58px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+
+        .navbar-title { font-size: 16px; font-weight: 700; }
+        .navbar-right { display: flex; align-items: center; gap: 4px; }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 7px 14px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .navbar a:hover { background: rgba(255,255,255,0.18); }
+        .navbar .btn-logout { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.35); }
+
+        .container {
+            max-width: 900px;
+            margin: 32px auto;
+            padding: 0 24px;
+        }
+
+        .page-heading {
+            font-size: 21px;
+            font-weight: 700;
+            color: #1a5c2a;
+            margin-bottom: 24px;
+            padding-bottom: 14px;
+            border-bottom: 2px solid #c8e6c9;
+        }
+
+        .btn-back {
+            display: inline-block;
+            padding: 9px 16px;
+            background: white;
+            border: 1.5px solid #c8e6c9;
+            color: #1a5c2a;
+            text-decoration: none;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 22px;
+            transition: background 0.2s;
+        }
+
+        .btn-back:hover { background: #e8f5e9; }
+
+        .alert {
+            padding: 13px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 13.5px;
+        }
+
+        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-danger { background: #fdf2f3; color: #8b1a27; border: 1px solid #f5c6cb; }
+
+        .card {
+            background: white;
+            border: 1.5px solid #c8e6c9;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(40,167,69,0.07);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            background: #28a745;
+            color: white;
+            padding: 14px 20px;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .card-body { padding: 22px; }
+
+        /* ── Complaint Form ── */
+        .form-group { margin-bottom: 18px; }
+        .form-group:last-child { margin-bottom: 0; }
+
+        label {
+            display: block;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #1a5c2a;
+            margin-bottom: 7px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #c3dbc9;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            background: #fafff9;
+            color: #222;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #28a745;
+            box-shadow: 0 0 0 3px rgba(40,167,69,0.12);
+        }
+
+        textarea { min-height: 100px; resize: vertical; }
+
+        .btn-submit {
+            padding: 12px 28px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .btn-submit:hover { background: #218838; }
+
+        /* ── Complaint History Items ── */
+        .complaint-item {
+            border: 1px solid #e0ede3;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 14px;
+            background: #fafff9;
+        }
+
+        .complaint-item:last-child { margin-bottom: 0; }
+
+        .complaint-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .complaint-subject {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1a5c2a;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .badge-pending { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
+        .badge-answered { background: #d4edda; color: #155724; border: 1px solid #28a745; }
+
+        .complaint-message {
+            font-size: 14px;
+            color: #444;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .complaint-date {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .reply-box {
+            background: #e8f5e9;
+            border-left: 4px solid #28a745;
+            border-radius: 0 8px 8px 0;
+            padding: 12px 14px;
+            margin-top: 10px;
+            font-size: 13.5px;
+            color: #1a5c2a;
+            line-height: 1.6;
+        }
+
+        .reply-box .reply-label {
+            font-weight: 700;
+            margin-bottom: 4px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .reply-date {
+            font-size: 11px;
+            color: #555;
+            margin-top: 6px;
+        }
+
+        .empty-note {
+            text-align: center;
+            color: #888;
+            padding: 30px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-title">NELFUND Refund Portal</div>
+        <div class="navbar-right">
+            <span style="font-size:13px; margin-right:6px; opacity:0.85;"><%= student.full_name %></span>
+            <a href="/student/dashboard">Dashboard</a>
+            <a href="/logout" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <a href="/student/dashboard" class="btn-back">&larr; Back to Dashboard</a>
+        <h1 class="page-heading">My Complaints</h1>
+
+        <% if (success) { %><div class="alert alert-success"><%= success %></div><% } %>
+        <% if (error) { %><div class="alert alert-danger"><%= error %></div><% } %>
+
+        <!-- Submit Form -->
+        <div class="card">
+            <div class="card-header">Submit a New Complaint</div>
+            <div class="card-body">
+                <form action="/student/complaints" method="POST">
+                    <div class="form-group">
+                        <label for="subject">Subject <span style="color:#c0392b">*</span></label>
+                        <input type="text" id="subject" name="subject" required
+                            placeholder="Brief description of the issue">
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message <span style="color:#c0392b">*</span></label>
+                        <textarea id="message" name="message" rows="4" required
+                            placeholder="Describe your complaint in detail..."></textarea>
+                    </div>
+                    <button type="submit" class="btn-submit">Submit Complaint</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Complaint History -->
+        <div class="card">
+            <div class="card-header">Complaint History</div>
+            <div class="card-body">
+                <% if (complaints.length === 0) { %>
+                    <div class="empty-note">You have not submitted any complaints yet.</div>
+                <% } else { %>
+                    <% complaints.forEach(function(complaint) { %>
+                        <div class="complaint-item">
+                            <div class="complaint-top">
+                                <div class="complaint-subject"><%= complaint.subject %></div>
+                                <span class="badge badge-<%= complaint.status %>">
+                                    <%= complaint.status.toUpperCase() %>
+                                </span>
+                            </div>
+                            <p class="complaint-message"><%= complaint.message %></p>
+                            <div class="complaint-date">
+                                Submitted: <%= new Date(complaint.created_at).toLocaleString() %>
+                            </div>
+
+                            <% if (complaint.status === 'answered') { %>
+                                <div class="reply-box">
+                                    <div class="reply-label">Staff Reply</div>
+                                    <%= complaint.reply %>
+                                    <div class="reply-date">
+                                        Replied: <%= new Date(complaint.replied_at).toLocaleString() %>
+                                    </div>
+                                </div>
+                            <% } %>
+                        </div>
+                    <% }); %>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

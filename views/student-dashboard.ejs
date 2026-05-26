@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NELFUND — Student Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background-color: #f5f7f5;
+            color: #222;
+        }
+
+        /* ── Navbar with logos ── */
+        .navbar {
+            background-color: #28a745;
+            color: white;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 66px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .navbar-brand img {
+            height: 44px;
+            width: auto;
+            object-fit: contain;
+            background: white;
+            border-radius: 6px;
+            padding: 3px;
+        }
+
+        .navbar-brand-text {
+            line-height: 1.25;
+        }
+
+        .navbar-brand-text .portal-title {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
+
+        .navbar-brand-text .portal-sub {
+            font-size: 11px;
+            opacity: 0.85;
+            font-weight: 400;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .navbar-right .user-name {
+            font-size: 13px;
+            font-weight: 600;
+            background: rgba(255,255,255,0.18);
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin-right: 6px;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 7px 14px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .navbar a:hover { background: rgba(255,255,255,0.18); }
+
+        .navbar .btn-logout {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+
+        .navbar .btn-logout:hover { background: rgba(255,255,255,0.28); }
+
+        /* ── Container ── */
+        .container {
+            max-width: 960px;
+            margin: 32px auto;
+            padding: 0 24px;
+        }
+
+        .page-heading {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a5c2a;
+            margin-bottom: 24px;
+            padding-bottom: 14px;
+            border-bottom: 2px solid #c8e6c9;
+            letter-spacing: 0.2px;
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: white;
+            border: 1.5px solid #c8e6c9;
+            border-radius: 10px;
+            padding: 24px;
+            margin-bottom: 22px;
+            box-shadow: 0 2px 8px rgba(40,167,69,0.07);
+        }
+
+        .card-header {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1a5c2a;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 1.5px solid #e0ede3;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Info Grid ── */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        .info-item {}
+
+        .info-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #28a745;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        /* ── Status Badges ── */
+        .badge {
+            display: inline-block;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+        }
+
+        .badge-pending { background-color: #fff3cd; color: #856404; border: 1px solid #ffc107; }
+        .badge-approved { background-color: #d4edda; color: #155724; border: 1px solid #28a745; }
+        .badge-rejected { background-color: #f8d7da; color: #721c24; border: 1px solid #dc3545; }
+
+        /* ── Alerts ── */
+        .alert {
+            padding: 14px 16px;
+            border-radius: 8px;
+            margin-bottom: 14px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .alert-info { background-color: #e8f5e9; color: #1a5c2a; border: 1px solid #a5d6a7; }
+        .alert-warning { background-color: #fff8e1; color: #856404; border: 1px solid #ffe082; }
+        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-danger { background-color: #fdf2f3; color: #8b1a27; border: 1px solid #f5c6cb; }
+
+        .amount-display {
+            font-size: 26px;
+            font-weight: 700;
+            color: #28a745;
+            margin-top: 6px;
+        }
+
+        /* ── CTA Section ── */
+        .cta-section {
+            text-align: center;
+            padding: 12px 0 4px;
+        }
+
+        .cta-section p {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 22px;
+            line-height: 1.6;
+        }
+
+        .cta-actions {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 13px 28px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            border: none;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        .btn:active { transform: scale(0.98); }
+
+        .btn-primary { background-color: #28a745; color: white; }
+        .btn-primary:hover { background-color: #218838; }
+
+        .btn-secondary { background-color: #e9ecef; color: #495057; border: 1.5px solid #ced4da; }
+        .btn-secondary:hover { background-color: #dee2e6; }
+    </style>
+</head>
+<body>
+    <!-- Navbar with logos -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <img src="/FUTBBBBBBB.png" alt="FUTB Logo">
+            <div class="navbar-brand-text">
+                <div class="portal-title">NELFUND Refund Portal</div>
+                <div class="portal-sub">Federal University of Technology, Babura</div>
+            </div>
+        </div>
+        <div class="navbar-right">
+            <span class="user-name"><%= student.full_name %></span>
+            <a href="/student/complaints">Complaints</a>
+            <a href="/logout" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1 class="page-heading">Student Dashboard</h1>
+
+        <!-- Student Info -->
+        <div class="card">
+            <div class="card-header">Your Information</div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Registration Number</div>
+                    <div class="info-value"><%= student.reg_number %></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Full Name</div>
+                    <div class="info-value"><%= student.full_name %></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Department</div>
+                    <div class="info-value"><%= student.department %></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Level</div>
+                    <div class="info-value"><%= student.level %></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Refund Status -->
+        <div class="card">
+            <div class="card-header">Refund Status</div>
+
+            <% if (existingRequest) { %>
+                <div class="info-grid" style="margin-bottom: 16px;">
+                    <div class="info-item">
+                        <div class="info-label">Status</div>
+                        <div class="info-value" style="margin-top:4px;">
+                            <span class="badge badge-<%= existingRequest.status %>">
+                                <%= existingRequest.status.toUpperCase() %>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Date Submitted</div>
+                        <div class="info-value"><%= new Date(existingRequest.submitted_at).toLocaleString() %></div>
+                    </div>
+                    <% if (existingRequest.refund_amount) { %>
+                    <div class="info-item">
+                        <div class="info-label">Refund Amount</div>
+                        <div class="amount-display">₦<%= parseFloat(existingRequest.refund_amount).toLocaleString() %></div>
+                    </div>
+                    <% } %>
+                </div>
+
+                <% if (existingRequest.status === 'pending') { %>
+                    <div class="alert alert-info">
+                        <strong>&#10003; Request Submitted</strong><br>
+                        Your refund request is currently under review. You will be notified once a decision is made.
+                    </div>
+                <% } %>
+
+                <% if (existingRequest.status === 'approved') { %>
+                    <div class="alert alert-success">
+                        <strong>&#10003; Request Approved</strong><br>
+                        Your refund has been approved and will be processed by the Bursary Department.
+                    </div>
+                <% } %>
+
+                <% if (existingRequest.status === 'rejected') { %>
+                    <div class="alert alert-danger">
+                        <strong>Request Rejected</strong><br>
+                        <strong>Reason:</strong> <%= existingRequest.rejection_reason %>
+                    </div>
+                <% } %>
+
+            <% } else { %>
+                <div class="alert alert-warning">
+                    <strong>No Request on File</strong><br>
+                    You have not yet submitted a refund request.
+                </div>
+            <% } %>
+        </div>
+
+        <!-- CTA -->
+        <% if (!existingRequest) { %>
+        <div class="card">
+            <div class="card-header">Apply for NELFUND Refund</div>
+            <div class="cta-section">
+                <p>
+                    Did you pay your school fees before NELFUND disbursed your loan?<br>
+                    If yes, you are eligible to apply for a refund.
+                </p>
+                <div class="cta-actions">
+                    <a href="/student/refund-request" class="btn btn-primary">Yes — Apply for Refund</a>
+                    <button class="btn btn-secondary"
+                        onclick="alert('You are not eligible for a refund because you did not pay before NELFUND disbursed your loan.')">
+                        No, I Did Not Pay
+                    </button>
+                </div>
+            </div>
+        </div>
+        <% } %>
+    </div>
+</body>
+</html>

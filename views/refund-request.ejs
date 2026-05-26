@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NELFUND — Submit Refund Request</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background-color: #f5f7f5;
+            color: #222;
+        }
+
+        /* ── Navbar (no logos on inner pages) ── */
+        .navbar {
+            background-color: #28a745;
+            color: white;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 58px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+
+        .navbar-title {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
+
+        .navbar-right { display: flex; align-items: center; gap: 4px; }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 7px 14px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .navbar a:hover { background: rgba(255,255,255,0.18); }
+
+        .navbar .btn-logout {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.35);
+        }
+
+        /* ── Page layout ── */
+        .container {
+            max-width: 760px;
+            margin: 32px auto;
+            padding: 0 24px;
+        }
+
+        .page-heading {
+            font-size: 21px;
+            font-weight: 700;
+            color: #1a5c2a;
+            margin-bottom: 20px;
+        }
+
+        /* ── Alerts ── */
+        .alert {
+            padding: 13px 16px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            font-size: 13.5px;
+            line-height: 1.55;
+        }
+
+        .alert-info { background: #e8f5e9; color: #1a5c2a; border: 1px solid #a5d6a7; }
+        .alert-error { background: #fdf2f3; color: #8b1a27; border: 1px solid #f5c6cb; }
+
+        /* ── Form Card ── */
+        .form-card {
+            background: white;
+            border: 1.5px solid #c8e6c9;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(40,167,69,0.08);
+            margin-bottom: 24px;
+        }
+
+        .form-section-header {
+            background: #28a745;
+            color: white;
+            padding: 14px 24px;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+
+        .form-section-body {
+            padding: 24px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-row.single { grid-template-columns: 1fr; }
+
+        @media (max-width: 600px) {
+            .form-row { grid-template-columns: 1fr; }
+        }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group:last-child { margin-bottom: 0; }
+
+        label {
+            display: block;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #1a5c2a;
+            margin-bottom: 7px;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #c3dbc9;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            color: #222;
+            background: #fafff9;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            appearance: auto;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            outline: none;
+            border-color: #28a745;
+            box-shadow: 0 0 0 3px rgba(40,167,69,0.12);
+        }
+
+        /* File upload styling */
+        .file-upload-wrapper {
+            position: relative;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px dashed #28a745;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: inherit;
+            background: #f0faf2;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .field-hint {
+            font-size: 11.5px;
+            color: #777;
+            margin-top: 5px;
+        }
+
+        /* ── Submit Button ── */
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            text-transform: uppercase;
+        }
+
+        .btn-submit:hover { background-color: #218838; }
+        .btn-submit:active { transform: scale(0.99); }
+        .btn-submit:disabled { background-color: #6c757d; cursor: not-allowed; opacity: 0.75; }
+
+        /* ── Loading Overlay ── */
+        .loading-overlay {
+            display: none;
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.92);
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+        .loading-overlay.active { display: flex; }
+        .loading-spinner {
+            width: 52px; height: 52px;
+            border: 5px solid #c8e6c9;
+            border-top-color: #28a745;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text {
+            font-size: 17px;
+            font-weight: 600;
+            color: #1a5c2a;
+            letter-spacing: 0.3px;
+        }
+        .loading-sub {
+            font-size: 13px;
+            color: #666;
+            margin-top: -10px;
+        }
+
+        /* ── Inline error banner (shown by JS) ── */
+        .alert-error-dynamic {
+            display: none;
+            padding: 13px 16px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            font-size: 13.5px;
+            line-height: 1.55;
+            background: #fdf2f3;
+            color: #8b1a27;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* ── Modal ── */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 1000; opacity: 0; pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-card {
+            background: white; border-radius: 12px; width: 90%; max-width: 450px;
+            padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transform: translateY(20px); transition: transform 0.3s;
+        }
+        .modal-overlay.active .modal-card { transform: translateY(0); }
+        .modal-title { font-size: 18px; font-weight: 700; color: #1a5c2a; margin-bottom: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .modal-detail { margin-bottom: 10px; font-size: 14px; }
+        .modal-detail strong { color: #555; display: inline-block; width: 140px; }
+        .modal-actions { display: flex; gap: 12px; margin-top: 24px; }
+        .btn-edit { flex: 1; padding: 12px; background: #f0f0f0; color: #333; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-edit:hover { background: #e4e4e4; }
+        .btn-confirm { flex: 1; padding: 12px; background: #28a745; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-confirm:hover { background: #218838; }
+        
+        /* Select2 override */
+        .select2-container .select2-selection--single { height: 44px; border: 1.5px solid #c3dbc9; border-radius: 8px; background: #fafff9; display: flex; align-items: center; }
+        .select2-container--default .select2-selection--single .select2-selection__arrow { height: 42px; }
+        .select2-container--default .select2-selection--single .select2-selection__rendered { color: #222; font-size: 14px; padding-left: 14px; }
+    </style>
+</head>
+<body>
+    <!-- Navbar (no logos on inner pages) -->
+    <nav class="navbar">
+        <div class="navbar-title">NELFUND Refund Portal</div>
+        <div class="navbar-right">
+            <a href="/student/dashboard">Dashboard</a>
+            <a href="/logout" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Submitting Your Request…</div>
+        <div class="loading-sub">Please wait, do not close this page.</div>
+    </div>
+
+    <div class="container">
+        <h1 class="page-heading">Submit Refund Request</h1>
+
+        <div class="alert alert-info">
+            <strong>Important Notice:</strong> Once submitted, this form is locked and cannot be edited.
+            Please verify all details carefully before proceeding.
+        </div>
+
+        <!-- Dynamic error shown by JS after failed AJAX submit -->
+        <div class="alert-error-dynamic" id="dynamicError"></div>
+
+        <% if (error) { %>
+            <div class="alert alert-error"><%= error %></div>
+        <% } %>
+
+        <form method="POST" action="/student/refund-request" enctype="multipart/form-data" id="refundForm">
+
+            <!-- Section 1: Payment Details -->
+            <div class="form-card">
+                <div class="form-section-header">Section 1 — Payment Details</div>
+                <div class="form-section-body">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="payment_type">Payment Type <span style="color:#c0392b">*</span></label>
+                            <select name="payment_type" id="payment_type" required>
+                                <option value="">— Select Payment Type —</option>
+                                <option value="first_installment">First Installment</option>
+                                <option value="second_installment">Second Installment</option>
+                                <option value="full_payment">Full Payment</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="amount_paid">Amount Paid (₦) <span style="color:#c0392b">*</span></label>
+                            <input type="number" name="amount_paid" id="amount_paid" step="0.01" required
+                                placeholder="Enter the amount you paid">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="remita_number">Remita RRR Number <span style="color:#c0392b">*</span></label>
+                            <input type="text" name="remita_number" id="remita_number"
+                                placeholder="e.g. 191397281991" maxlength="14" required>
+                            <div class="field-hint">Enter your 12-digit Remita Retrieval Reference number</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="remita_file">Remita Document <span style="color:#c0392b">*</span></label>
+                            <div class="file-upload-wrapper">
+                                <input type="file" name="remita_file" id="remita_file"
+                                    accept=".pdf,.jpg,.jpeg,.png" required>
+                            </div>
+                            <div class="field-hint">PDF, JPG or PNG — Maximum file size: 5 MB</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Section 2: Bank Account Details -->
+            <div class="form-card">
+                <div class="form-section-header">Section 2 — Bank Account Details</div>
+                <div class="form-section-body">
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="account_name">Account Name <span style="color:#c0392b">*</span></label>
+                            <input type="text" name="account_name" id="account_name" required
+                                placeholder="As it appears on your bank account">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="account_number">Account Number <span style="color:#c0392b">*</span></label>
+                            <input type="text" name="account_number" id="account_number" required
+                                placeholder="10-digit NUBAN number" maxlength="10">
+                            <div class="field-hint">Must be exactly 10 digits</div>
+                        </div>
+                    </div>
+
+                    <div class="form-row single">
+                        <div class="form-group">
+                            <label for="bank_name">Bank Name <span style="color:#c0392b">*</span></label>
+                            <select name="bank_name" id="bank_name" required>
+                                <option value="">— Select Your Bank —</option>
+                            </select>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn">
+                ✅ Submit Refund Request
+            </button>
+        </form>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-card">
+            <div class="modal-title">Confirm Your Details</div>
+            <div id="modalDetails"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn-edit" id="btnEdit" onclick="closeModal()">Edit Details</button>
+                <button type="button" class="btn-confirm" id="btnConfirm" onclick="submitForm()">Confirm &amp; Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+    <script>
+        // ── Load Banks into Select2 ─────────────────────────────────────────
+        $(document).ready(function() {
+            $('#bank_name').select2({
+                placeholder: "— Select Your Bank —",
+                allowClear: true
+            });
+
+            fetch('/data/banks.json')
+                .then(response => response.json())
+                .then(data => {
+                    const bankSelect = document.getElementById('bank_name');
+                    const bankNames = Object.keys(data).sort();
+                    bankNames.forEach(bank => {
+                        const option = document.createElement('option');
+                        option.value = bank;
+                        option.textContent = bank;
+                        bankSelect.appendChild(option);
+                    });
+                    $('#bank_name').trigger('change');
+                })
+                .catch(error => console.error('Error loading banks:', error));
+        });
+
+        // ── Form Submission and Modal Logic ────────────────────────────────
+        const form       = document.getElementById('refundForm');
+        const modal      = document.getElementById('confirmModal');
+        const modalDetails = document.getElementById('modalDetails');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const dynamicError   = document.getElementById('dynamicError');
+
+        function showError(msg) {
+            dynamicError.textContent = msg;
+            dynamicError.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function hideError() {
+            dynamicError.style.display = 'none';
+            dynamicError.textContent = '';
+        }
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            hideError();
+
+            // Validate File
+            const file = document.getElementById('remita_file').files[0];
+            if (!file) {
+                showError('Please upload your Remita document.');
+                return;
+            }
+            if (file.size > 5242880) {
+                showError('File size exceeds 5 MB. Please upload a smaller file.');
+                return;
+            }
+
+            // Validate Account Number
+            const acct = document.getElementById('account_number').value.trim();
+            if (acct.length !== 10 || isNaN(acct)) {
+                showError('Account number must be exactly 10 digits.');
+                return;
+            }
+
+            // Populate and show confirmation modal
+            const paymentType   = document.getElementById('payment_type').options[document.getElementById('payment_type').selectedIndex].text;
+            const amount        = document.getElementById('amount_paid').value;
+            const remitaNumber  = document.getElementById('remita_number').value;
+            const accountName   = document.getElementById('account_name').value;
+            const bankName      = document.getElementById('bank_name').value;
+            const formattedAmount = new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
+
+            modalDetails.innerHTML = `
+                <div class="modal-detail"><strong>Payment Type:</strong> <span>${paymentType}</span></div>
+                <div class="modal-detail"><strong>Amount Paid:</strong> <span>${formattedAmount}</span></div>
+                <div class="modal-detail"><strong>Remita RRR:</strong> <span>${remitaNumber}</span></div>
+                <hr style="margin:12px 0;border:0;border-top:1px solid #eee;">
+                <div class="modal-detail"><strong>Account Name:</strong> <span>${accountName}</span></div>
+                <div class="modal-detail"><strong>Account No:</strong> <span>${acct}</span></div>
+                <div class="modal-detail"><strong>Bank Name:</strong> <span>${bankName}</span></div>
+            `;
+            modal.classList.add('active');
+        });
+
+        function closeModal() {
+            modal.classList.remove('active');
+        }
+
+        async function submitForm() {
+            // Close modal and immediately show loading overlay
+            modal.classList.remove('active');
+            loadingOverlay.classList.add('active');
+
+            // Disable submit button to prevent double-submit
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('btnConfirm').disabled = true;
+
+            try {
+                const formData = new FormData(form);
+
+                const response = await fetch('/student/refund-request', {
+                    method: 'POST',
+                    body: formData
+                    // Do NOT set Content-Type — fetch sets it automatically for FormData (multipart)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Navigate immediately — no spinner, no waiting
+                    window.location.href = result.redirect || '/student/dashboard';
+                } else {
+                    // Hide overlay, show error inline
+                    loadingOverlay.classList.remove('active');
+                    document.getElementById('submitBtn').disabled = false;
+                    document.getElementById('btnConfirm').disabled = false;
+                    showError(result.error || 'Submission failed. Please try again.');
+                }
+
+            } catch (networkErr) {
+                loadingOverlay.classList.remove('active');
+                document.getElementById('submitBtn').disabled = false;
+                document.getElementById('btnConfirm').disabled = false;
+                showError('Network error. Please check your connection and try again.');
+            }
+        }
+    </script>
+</body>
+</html>

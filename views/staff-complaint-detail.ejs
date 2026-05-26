@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NELFUND — Complaint Detail</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background-color: #f5f7f5;
+            color: #222;
+        }
+
+        .navbar {
+            background-color: #28a745;
+            color: white;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 58px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+
+        .navbar-title { font-size: 16px; font-weight: 700; }
+        .navbar-right { display: flex; align-items: center; gap: 4px; }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 7px 14px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .navbar a:hover { background: rgba(255,255,255,0.18); }
+        .navbar .btn-logout { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.35); }
+
+        .container {
+            max-width: 900px;
+            margin: 32px auto;
+            padding: 0 24px;
+        }
+
+        .btn-back {
+            display: inline-block;
+            padding: 9px 16px;
+            background: white;
+            border: 1.5px solid #c8e6c9;
+            color: #1a5c2a;
+            text-decoration: none;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 22px;
+            transition: background 0.2s;
+        }
+
+        .btn-back:hover { background: #e8f5e9; }
+
+        .card {
+            background: white;
+            border: 1.5px solid #c8e6c9;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(40,167,69,0.07);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            background: #28a745;
+            color: white;
+            padding: 14px 20px;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        .card-body { padding: 22px; }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        .info-item {}
+
+        .info-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #28a745;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .badge-pending { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
+        .badge-answered { background: #d4edda; color: #155724; border: 1px solid #28a745; }
+
+        .message-block {
+            margin-top: 18px;
+        }
+
+        .message-block .msg-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #28a745;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .message-box {
+            background: #f5f7f5;
+            border: 1px solid #e0ede3;
+            border-radius: 8px;
+            padding: 14px 16px;
+            font-size: 14px;
+            line-height: 1.65;
+            color: #333;
+        }
+
+        .message-box.reply-box {
+            background: #e8f5e9;
+            border-color: #a5d6a7;
+            border-left: 4px solid #28a745;
+        }
+
+        /* ── Reply Form ── */
+        label {
+            display: block;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #1a5c2a;
+            margin-bottom: 7px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #c3dbc9;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            min-height: 120px;
+            resize: vertical;
+            background: #fafff9;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #28a745;
+            box-shadow: 0 0 0 3px rgba(40,167,69,0.12);
+        }
+
+        .btn-send {
+            margin-top: 14px;
+            padding: 13px 30px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .btn-send:hover { background: #218838; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-title">NELFUND Staff Portal</div>
+        <div class="navbar-right">
+            <span style="font-size:13px; margin-right:6px; opacity:0.85;"><%= staff.full_name %></span>
+            <a href="/staff/dashboard">Dashboard</a>
+            <a href="/staff/logout" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <a href="/staff/complaints" class="btn-back">&larr; Back to Complaints</a>
+
+        <!-- Student Info -->
+        <div class="card">
+            <div class="card-header">Student Information</div>
+            <div class="card-body">
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Full Name</div>
+                        <div class="info-value"><%= complaint.full_name %></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Reg. Number</div>
+                        <div class="info-value"><%= complaint.reg_number %></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Department</div>
+                        <div class="info-value"><%= complaint.department %></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Level</div>
+                        <div class="info-value"><%= complaint.level %></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Complaint Details -->
+        <div class="card">
+            <div class="card-header">Complaint Details</div>
+            <div class="card-body">
+                <div class="info-grid" style="margin-bottom:16px;">
+                    <div class="info-item">
+                        <div class="info-label">Subject</div>
+                        <div class="info-value" style="font-weight:600;"><%= complaint.subject %></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Date Submitted</div>
+                        <div class="info-value"><%= new Date(complaint.created_at).toLocaleString() %></div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Status</div>
+                        <div class="info-value" style="margin-top:2px;">
+                            <span class="badge badge-<%= complaint.status %>">
+                                <%= complaint.status.toUpperCase() %>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="message-block">
+                    <div class="msg-label">Message</div>
+                    <div class="message-box"><%= complaint.message %></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reply Section -->
+        <div class="card">
+            <div class="card-header">Staff Reply</div>
+            <div class="card-body">
+
+                <% if (complaint.status === 'answered') { %>
+                    <div class="info-grid" style="margin-bottom:14px;">
+                        <div class="info-item">
+                            <div class="info-label">Replied By</div>
+                            <div class="info-value"><%= complaint.staff_name %></div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Date Replied</div>
+                            <div class="info-value"><%= new Date(complaint.replied_at).toLocaleString() %></div>
+                        </div>
+                    </div>
+                    <div class="message-block">
+                        <div class="msg-label">Reply Content</div>
+                        <div class="message-box reply-box"><%= complaint.reply %></div>
+                    </div>
+
+                <% } else { %>
+                    <form action="/staff/complaints/<%= complaint.complaint_id %>/reply" method="POST">
+                        <label for="reply">Write a Reply <span style="color:#c0392b">*</span></label>
+                        <textarea id="reply" name="reply" rows="5" required
+                            placeholder="Type your response to the student here..."></textarea>
+                        <button type="submit" class="btn-send">Send Reply</button>
+                    </form>
+                <% } %>
+
+            </div>
+        </div>
+    </div>
+</body>
+</html>

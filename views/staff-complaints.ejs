@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NELFUND — Staff Complaints</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background-color: #f5f7f5;
+            color: #222;
+        }
+
+        .navbar {
+            background-color: #28a745;
+            color: white;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 58px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+
+        .navbar-title { font-size: 16px; font-weight: 700; }
+        .navbar-right { display: flex; align-items: center; gap: 4px; }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 7px 14px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .navbar a:hover { background: rgba(255,255,255,0.18); }
+        .navbar .btn-logout { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.35); }
+
+        .container {
+            max-width: 1100px;
+            margin: 32px auto;
+            padding: 0 24px;
+        }
+
+        .page-heading {
+            font-size: 21px;
+            font-weight: 700;
+            color: #1a5c2a;
+            margin-bottom: 24px;
+            padding-bottom: 14px;
+            border-bottom: 2px solid #c8e6c9;
+        }
+
+        .btn-back {
+            display: inline-block;
+            padding: 9px 16px;
+            background: white;
+            border: 1.5px solid #c8e6c9;
+            color: #1a5c2a;
+            text-decoration: none;
+            border-radius: 7px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 22px;
+            transition: background 0.2s;
+        }
+
+        .btn-back:hover { background: #e8f5e9; }
+
+        .card {
+            background: white;
+            border: 1.5px solid #c8e6c9;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(40,167,69,0.07);
+        }
+
+        .card-header {
+            background: #28a745;
+            color: white;
+            padding: 14px 20px;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        /* ── Table ── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead th {
+            background: #f0faf2;
+            color: #1a5c2a;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 13px 16px;
+            text-align: left;
+            border-bottom: 1.5px solid #c8e6c9;
+        }
+
+        tbody td {
+            padding: 13px 16px;
+            font-size: 14px;
+            border-bottom: 1px solid #e8f5e9;
+            vertical-align: middle;
+        }
+
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover { background: #f9fffa; }
+
+        .student-name { font-weight: 600; color: #222; }
+        .reg-number { font-size: 12px; color: #777; margin-top: 2px; }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+
+        .badge-pending { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
+        .badge-answered { background: #d4edda; color: #155724; border: 1px solid #28a745; }
+
+        .btn-view {
+            display: inline-block;
+            padding: 7px 14px;
+            background: #17a2b8;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .btn-view:hover { background: #138496; }
+
+        .empty-row td {
+            text-align: center;
+            padding: 50px;
+            color: #888;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-title">NELFUND Staff Portal</div>
+        <div class="navbar-right">
+            <span style="font-size:13px; margin-right:6px; opacity:0.85;"><%= staff.full_name %></span>
+            <a href="/staff/dashboard">Dashboard</a>
+            <a href="/staff/logout" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <a href="/staff/dashboard" class="btn-back">&larr; Back to Dashboard</a>
+        <h1 class="page-heading">Student Complaints</h1>
+
+        <div class="card">
+            <div class="card-header">All Complaints</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Department</th>
+                        <th>Subject</th>
+                        <th>Date Submitted</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (complaints.length === 0) { %>
+                        <tr class="empty-row">
+                            <td colspan="6">No complaints have been submitted yet.</td>
+                        </tr>
+                    <% } else { %>
+                        <% complaints.forEach(function(complaint) { %>
+                            <tr>
+                                <td>
+                                    <div class="student-name"><%= complaint.full_name %></div>
+                                    <div class="reg-number"><%= complaint.reg_number %></div>
+                                </td>
+                                <td><%= complaint.department %></td>
+                                <td><%= complaint.subject %></td>
+                                <td><%= new Date(complaint.created_at).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) %></td>
+                                <td>
+                                    <span class="badge badge-<%= complaint.status %>">
+                                        <%= complaint.status.toUpperCase() %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="/staff/complaints/<%= complaint.complaint_id %>" class="btn-view">
+                                        View &amp; Reply
+                                    </a>
+                                </td>
+                            </tr>
+                        <% }); %>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

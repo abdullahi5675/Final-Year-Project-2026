@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NELFUND — Staff Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            background-color: #f5f7f5;
+            color: #222;
+        }
+
+        /* ── Navbar with logos ── */
+        .navbar {
+            background-color: #28a745;
+            color: white;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 66px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .navbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .navbar-brand img {
+            height: 44px;
+            width: auto;
+            object-fit: contain;
+            background: white;
+            border-radius: 6px;
+            padding: 3px;
+        }
+
+        .navbar-brand-text .portal-title {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .navbar-brand-text .portal-sub {
+            font-size: 11px;
+            opacity: 0.85;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .navbar-right .user-name {
+            font-size: 13px;
+            font-weight: 600;
+            background: rgba(255,255,255,0.18);
+            padding: 5px 12px;
+            border-radius: 20px;
+            margin-right: 6px;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 7px 14px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .navbar a:hover { background: rgba(255,255,255,0.18); }
+
+        .navbar .btn-logout {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+
+        /* ── Container ── */
+        .container {
+            max-width: 1100px;
+            margin: 32px auto;
+            padding: 0 24px;
+        }
+
+        .page-heading {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a5c2a;
+            margin-bottom: 24px;
+            padding-bottom: 14px;
+            border-bottom: 2px solid #c8e6c9;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 16px;
+            margin-top: 32px;
+        }
+
+        /* ── Stats Grid ── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 10px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1.5px solid #c8e6c9;
+            border-radius: 10px;
+            padding: 22px 20px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(40,167,69,0.07);
+        }
+
+        .stat-number {
+            font-size: 40px;
+            font-weight: 700;
+            color: #28a745;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        /* ── Action Cards ── */
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+        }
+
+        .action-card {
+            background: white;
+            border: 1.5px solid #c8e6c9;
+            border-radius: 10px;
+            padding: 26px 22px;
+            text-align: center;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            box-shadow: 0 2px 8px rgba(40,167,69,0.07);
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+        }
+
+        .action-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(40,167,69,0.14);
+            border-color: #28a745;
+        }
+
+        .action-icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+
+        .action-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a5c2a;
+            margin-bottom: 6px;
+        }
+
+        .action-desc {
+            font-size: 13px;
+            color: #777;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar with logos -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <img src="/FUTBBBBBBB.png" alt="FUTB Logo">
+            <div class="navbar-brand-text">
+                <div class="portal-title">NELFUND Staff Portal</div>
+                <div class="portal-sub">Federal University of Technology, Babura</div>
+            </div>
+        </div>
+        <div class="navbar-right">
+            <span class="user-name"><%= staff.full_name %></span>
+            <a href="/staff/dashboard">Dashboard</a>
+            <a href="/staff/complaints">Complaints</a>
+            <a href="/staff/logout" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1 class="page-heading">Staff Dashboard</h1>
+
+        <!-- Stats -->
+        <div class="section-title">Overview</div>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number"><%= stats.pending %></div>
+                <div class="stat-label">Pending Requests</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number"><%= stats.approved %></div>
+                <div class="stat-label">Approved (Unbatched)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number"><%= stats.totalStudents %></div>
+                <div class="stat-label">Total Students</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number"><%= stats.totalRequests %></div>
+                <div class="stat-label">Total Requests</div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="section-title">Quick Actions</div>
+        <div class="actions-grid">
+            <a href="/staff/upload-list" class="action-card">
+                <div class="action-icon">📤</div>
+                <div class="action-title">Upload NELFUND List</div>
+                <div class="action-desc">Upload the approved student list received from NELFUND</div>
+            </a>
+            <a href="/staff/pending-requests" class="action-card">
+                <div class="action-icon">📋</div>
+                <div class="action-title">Pending Requests</div>
+                <div class="action-desc">Review, approve, or reject student refund requests</div>
+            </a>
+            <a href="/staff/generate-batch" class="action-card">
+                <div class="action-icon">📊</div>
+                <div class="action-title">Generate Batch</div>
+                <div class="action-desc">Export approved requests as Excel file for the Bursary</div>
+            </a>
+        </div>
+    </div>
+</body>
+</html>
