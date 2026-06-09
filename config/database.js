@@ -2,17 +2,32 @@ const { Pool } = require('pg');
 require('dotenv').config();
 
 // Create connection pool
-const pool = new Pool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT || 5432,
-    max: 10,
-    idleTimeoutMillis: 60000,
-    connectionTimeoutMillis: 10000,
-    query_timeout: 30000,
-});
+// On Render, DATABASE_URL is provided — use it with SSL enabled.
+// For local development, fall back to individual DB_* env vars without SSL.
+const poolConfig = process.env.DATABASE_URL
+    ? {
+        connectionString: process.env.DATABASE_URL,
+        ssl: {
+            rejectUnauthorized: false  // Required for Render's managed PostgreSQL
+        },
+        max: 10,
+        idleTimeoutMillis: 60000,
+        connectionTimeoutMillis: 10000,
+        query_timeout: 30000,
+    }
+    : {
+        host: process.env.DB_HOST,
+        user: process.env.DB_USER,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
+        port: process.env.DB_PORT || 5432,
+        max: 10,
+        idleTimeoutMillis: 60000,
+        connectionTimeoutMillis: 10000,
+        query_timeout: 30000,
+    };
+
+const pool = new Pool(poolConfig);
 
 pool.on('error', (err, client) => {
     console.error('Unexpected error on idle client', err);
