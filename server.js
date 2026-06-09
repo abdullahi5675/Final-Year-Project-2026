@@ -5,6 +5,8 @@ const path = require('path');
 const morgan = require('morgan');
 require('dotenv').config();
 
+const migrate = require('./config/migrate');
+
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -66,10 +68,17 @@ app.use((err, req, res, next) => {
     res.status(500).send('Something went wrong!');
 });
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`✓ Server running on http://localhost:${PORT}`);
-});
+// Run migrations then start server
+migrate()
+    .then(() => {
+        app.listen(PORT, () => {
+            console.log(`✓ Server running on http://localhost:${PORT}`);
+        });
+    })
+    .catch((err) => {
+        console.error('✗ Server failed to start due to migration error:', err.message);
+        process.exit(1);
+    });
 
 // Catch unhandled promise rejections so the process never silently hangs
 process.on('unhandledRejection', (reason, promise) => {
