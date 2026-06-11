@@ -128,9 +128,19 @@ async function handleRefundSubmit(req, res) {
             throw new Error('Please upload your Remita document.');
         }
 
-        // Validate RRR (basic: must not be empty)
-        if (!remita_number) {
-            throw new Error('Please enter your Remita RRR number.');
+        // Validate RRR — must be exactly 12 digits
+        if (!/^[0-9]{12}$/.test(remita_number)) {
+            throw new Error('Remita RRR must be exactly 12 digits (numbers only).');
+        }
+
+        // Validate account number — must be exactly 10 digits
+        if (!/^[0-9]{10}$/.test((account_number || '').trim())) {
+            throw new Error('Account number must be exactly 10 digits (numbers only).');
+        }
+
+        // Validate account name — letters and spaces only
+        if (!/^[A-Za-z ]+$/.test((account_name || '').trim())) {
+            throw new Error('Account name must contain letters and spaces only.');
         }
 
         // Validate amount

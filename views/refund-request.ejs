@@ -172,6 +172,23 @@
             margin-top: 5px;
         }
 
+        /* Inline field-level error */
+        .field-error {
+            font-size: 11.5px;
+            color: #c0392b;
+            margin-top: 5px;
+            display: none;
+        }
+
+        input.input-invalid {
+            border-color: #e74c3c !important;
+            box-shadow: 0 0 0 3px rgba(231,76,60,0.12) !important;
+        }
+
+        input.input-valid {
+            border-color: #28a745 !important;
+        }
+
         /* ── Submit Button ── */
         .btn-submit {
             width: 100%;
@@ -328,8 +345,15 @@
                         <div class="form-group">
                             <label for="remita_number">Remita RRR Number <span style="color:#c0392b">*</span></label>
                             <input type="text" name="remita_number" id="remita_number"
-                                placeholder="e.g. 191397281991" maxlength="14" required>
-                            <div class="field-hint">Enter your 12-digit Remita Retrieval Reference number</div>
+                                placeholder="e.g. 191397281991"
+                                maxlength="12"
+                                minlength="12"
+                                inputmode="numeric"
+                                pattern="[0-9]{12}"
+                                autocomplete="off"
+                                required>
+                            <div class="field-hint">Enter your 12-digit Remita Retrieval Reference (numbers only)</div>
+                            <div class="field-error" id="remita_number_error">RRR must be exactly 12 digits (numbers only).</div>
                         </div>
 
                         <div class="form-group">
@@ -354,14 +378,23 @@
                         <div class="form-group">
                             <label for="account_name">Account Name <span style="color:#c0392b">*</span></label>
                             <input type="text" name="account_name" id="account_name" required
-                                placeholder="As it appears on your bank account">
+                                placeholder="As it appears on your bank account"
+                                pattern="[A-Za-z ]+"
+                                autocomplete="off">
+                            <div class="field-error" id="account_name_error">Account name must contain letters and spaces only (no numbers or symbols).</div>
                         </div>
 
                         <div class="form-group">
                             <label for="account_number">Account Number <span style="color:#c0392b">*</span></label>
                             <input type="text" name="account_number" id="account_number" required
-                                placeholder="10-digit NUBAN number" maxlength="10">
-                            <div class="field-hint">Must be exactly 10 digits</div>
+                                placeholder="10-digit NUBAN number"
+                                maxlength="10"
+                                minlength="10"
+                                inputmode="numeric"
+                                pattern="[0-9]{10}"
+                                autocomplete="off">
+                            <div class="field-hint">Must be exactly 10 digits (numbers only)</div>
+                            <div class="field-error" id="account_number_error">Account number must be exactly 10 digits (numbers only).</div>
                         </div>
                     </div>
 
@@ -425,9 +458,9 @@
         });
 
         // ── Form Submission and Modal Logic ────────────────────────────────
-        const form       = document.getElementById('refundForm');
-        const modal      = document.getElementById('confirmModal');
-        const modalDetails = document.getElementById('modalDetails');
+        const form           = document.getElementById('refundForm');
+        const modal          = document.getElementById('confirmModal');
+        const modalDetails   = document.getElementById('modalDetails');
         const loadingOverlay = document.getElementById('loadingOverlay');
         const dynamicError   = document.getElementById('dynamicError');
 
@@ -442,9 +475,108 @@
             dynamicError.textContent = '';
         }
 
+        // ── Helper: show/hide per-field inline error ──────────────────────
+        function setFieldError(inputEl, errorEl, hasError) {
+            if (hasError) {
+                inputEl.classList.add('input-invalid');
+                inputEl.classList.remove('input-valid');
+                errorEl.style.display = 'block';
+            } else {
+                inputEl.classList.remove('input-invalid');
+                inputEl.classList.add('input-valid');
+                errorEl.style.display = 'none';
+            }
+        }
+
+        // ── Real-time: RRR — numbers only ─────────────────────────────────
+        const remitaInput = document.getElementById('remita_number');
+        const remitaError = document.getElementById('remita_number_error');
+
+        remitaInput.addEventListener('input', function () {
+            // Strip any non-digit characters the user somehow pastes in
+            this.value = this.value.replace(/[^0-9]/g, '');
+            if (this.value.length > 0) {
+                setFieldError(this, remitaError, this.value.length !== 12);
+            } else {
+                this.classList.remove('input-invalid', 'input-valid');
+                remitaError.style.display = 'none';
+            }
+        });
+
+        remitaInput.addEventListener('keypress', function (e) {
+            if (!/[0-9]/.test(e.key)) e.preventDefault();
+        });
+
+        remitaInput.addEventListener('paste', function (e) {
+            e.preventDefault();
+            const pasted = (e.clipboardData || window.clipboardData).getData('text');
+            const digitsOnly = pasted.replace(/[^0-9]/g, '').slice(0, 12);
+            this.value = digitsOnly;
+            this.dispatchEvent(new Event('input'));
+        });
+
+        // ── Real-time: Account Number — numbers only, 10 digits ───────────
+        const acctNumInput = document.getElementById('account_number');
+        const acctNumError = document.getElementById('account_number_error');
+
+        acctNumInput.addEventListener('input', function () {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            if (this.value.length > 0) {
+                setFieldError(this, acctNumError, this.value.length !== 10);
+            } else {
+                this.classList.remove('input-invalid', 'input-valid');
+                acctNumError.style.display = 'none';
+            }
+        });
+
+        acctNumInput.addEventListener('keypress', function (e) {
+            if (!/[0-9]/.test(e.key)) e.preventDefault();
+        });
+
+        acctNumInput.addEventListener('paste', function (e) {
+            e.preventDefault();
+            const pasted = (e.clipboardData || window.clipboardData).getData('text');
+            const digitsOnly = pasted.replace(/[^0-9]/g, '').slice(0, 10);
+            this.value = digitsOnly;
+            this.dispatchEvent(new Event('input'));
+        });
+
+        // ── Real-time: Account Name — letters and spaces only ─────────────
+        const acctNameInput = document.getElementById('account_name');
+        const acctNameError = document.getElementById('account_name_error');
+
+        acctNameInput.addEventListener('input', function () {
+            // Remove anything that isn't a letter or space
+            this.value = this.value.replace(/[^A-Za-z ]/g, '');
+            if (this.value.trim().length > 0) {
+                setFieldError(this, acctNameError, false);
+            } else if (this.value.length > 0) {
+                // only spaces typed — still invalid
+                setFieldError(this, acctNameError, true);
+            } else {
+                this.classList.remove('input-invalid', 'input-valid');
+                acctNameError.style.display = 'none';
+            }
+        });
+
+        acctNameInput.addEventListener('keypress', function (e) {
+            if (!/[A-Za-z ]/.test(e.key)) e.preventDefault();
+        });
+
+        acctNameInput.addEventListener('paste', function (e) {
+            e.preventDefault();
+            const pasted = (e.clipboardData || window.clipboardData).getData('text');
+            const lettersOnly = pasted.replace(/[^A-Za-z ]/g, '');
+            this.value = lettersOnly;
+            this.dispatchEvent(new Event('input'));
+        });
+
+        // ── Form submit with full validation ──────────────────────────────
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             hideError();
+
+            let hasErrors = false;
 
             // Validate File
             const file = document.getElementById('remita_file').files[0];
@@ -457,27 +589,44 @@
                 return;
             }
 
+            // Validate RRR
+            const rrr = remitaInput.value.trim();
+            if (!/^[0-9]{12}$/.test(rrr)) {
+                setFieldError(remitaInput, remitaError, true);
+                hasErrors = true;
+            }
+
             // Validate Account Number
-            const acct = document.getElementById('account_number').value.trim();
-            if (acct.length !== 10 || isNaN(acct)) {
-                showError('Account number must be exactly 10 digits.');
+            const acct = acctNumInput.value.trim();
+            if (!/^[0-9]{10}$/.test(acct)) {
+                setFieldError(acctNumInput, acctNumError, true);
+                hasErrors = true;
+            }
+
+            // Validate Account Name
+            const acctName = acctNameInput.value.trim();
+            if (!/^[A-Za-z ]+$/.test(acctName)) {
+                setFieldError(acctNameInput, acctNameError, true);
+                hasErrors = true;
+            }
+
+            if (hasErrors) {
+                showError('Please fix the highlighted fields before submitting.');
                 return;
             }
 
             // Populate and show confirmation modal
-            const paymentType   = document.getElementById('payment_type').options[document.getElementById('payment_type').selectedIndex].text;
-            const amount        = document.getElementById('amount_paid').value;
-            const remitaNumber  = document.getElementById('remita_number').value;
-            const accountName   = document.getElementById('account_name').value;
-            const bankName      = document.getElementById('bank_name').value;
+            const paymentType     = document.getElementById('payment_type').options[document.getElementById('payment_type').selectedIndex].text;
+            const amount          = document.getElementById('amount_paid').value;
+            const bankName        = document.getElementById('bank_name').value;
             const formattedAmount = new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
 
             modalDetails.innerHTML = `
                 <div class="modal-detail"><strong>Payment Type:</strong> <span>${paymentType}</span></div>
                 <div class="modal-detail"><strong>Amount Paid:</strong> <span>${formattedAmount}</span></div>
-                <div class="modal-detail"><strong>Remita RRR:</strong> <span>${remitaNumber}</span></div>
+                <div class="modal-detail"><strong>Remita RRR:</strong> <span>${rrr}</span></div>
                 <hr style="margin:12px 0;border:0;border-top:1px solid #eee;">
-                <div class="modal-detail"><strong>Account Name:</strong> <span>${accountName}</span></div>
+                <div class="modal-detail"><strong>Account Name:</strong> <span>${acctName}</span></div>
                 <div class="modal-detail"><strong>Account No:</strong> <span>${acct}</span></div>
                 <div class="modal-detail"><strong>Bank Name:</strong> <span>${bankName}</span></div>
             `;
