@@ -282,13 +282,99 @@
         .select2-container .select2-selection--single { height: 44px; border: 1.5px solid #c3dbc9; border-radius: 8px; background: #fafff9; display: flex; align-items: center; }
         .select2-container--default .select2-selection--single .select2-selection__arrow { height: 42px; }
         .select2-container--default .select2-selection--single .select2-selection__rendered { color: #222; font-size: 14px; padding-left: 14px; }
+
+        /* ── Responsive Styling ── */
+        .navbar {
+            position: relative;
+        }
+
+        .navbar-toggle {
+            display: none;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 24px;
+            height: 18px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            z-index: 1001;
+        }
+
+        .navbar-toggle .bar {
+            height: 3px;
+            width: 100%;
+            background-color: white;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .navbar-toggle {
+                display: flex;
+            }
+
+            .navbar-toggle.active .bar:nth-child(1) {
+                transform: translateY(7.5px) rotate(45deg);
+            }
+            .navbar-toggle.active .bar:nth-child(2) {
+                opacity: 0;
+            }
+            .navbar-toggle.active .bar:nth-child(3) {
+                transform: translateY(-7.5px) rotate(-45deg);
+            }
+
+            .navbar-right {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background-color: #28a745;
+                padding: 16px 24px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 999;
+                gap: 12px;
+                align-items: stretch;
+            }
+
+            .navbar-right.active {
+                display: flex;
+            }
+
+            .navbar a {
+                text-align: center;
+                width: 100%;
+                padding: 10px;
+            }
+
+            .container {
+                margin: 20px auto;
+                padding: 0 16px;
+            }
+
+            .form-card {
+                margin-bottom: 16px;
+            }
+
+            .form-section-body {
+                padding: 16px;
+            }
+        }
     </style>
 </head>
 <body>
     <!-- Navbar (no logos on inner pages) -->
     <nav class="navbar">
         <div class="navbar-title">NELFUND Refund Portal</div>
-        <div class="navbar-right">
+        <!-- Hamburger Menu Button -->
+        <button class="navbar-toggle" id="navbarToggle" aria-label="Toggle navigation">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+        <div class="navbar-right" id="navbarRight">
             <a href="/student/dashboard">Dashboard</a>
             <a href="/logout" class="btn-logout">Logout</a>
         </div>
@@ -675,6 +761,27 @@
                 showError('Network error. Please check your connection and try again.');
             }
         }
+
+        // Navbar mobile toggle script
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleBtn = document.getElementById('navbarToggle');
+            const navRight = document.getElementById('navbarRight');
+
+            if (toggleBtn && navRight) {
+                toggleBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleBtn.classList.toggle('active');
+                    navRight.classList.toggle('active');
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (navRight.classList.contains('active') && !navRight.contains(e.target) && !toggleBtn.contains(e.target)) {
+                        toggleBtn.classList.remove('active');
+                        navRight.classList.remove('active');
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>
