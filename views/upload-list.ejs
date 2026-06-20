@@ -45,6 +45,8 @@
             border: 1px solid rgba(255,255,255,0.35);
         }
 
+        .navbar a.active-link { background: rgba(255,255,255,0.22); }
+
         .container {
             max-width: 680px;
             margin: 32px auto;
@@ -264,7 +266,11 @@
             <span class="bar"></span>
         </button>
         <div class="navbar-right" id="navbarRight">
+            <span style="font-size:13px; margin-right:6px; opacity:0.85;"><%= staff.full_name %></span>
             <a href="/staff/dashboard">Dashboard</a>
+            <a href="/staff/pending-requests">Pending</a>
+            <a href="/staff/rejected-requests">Rejected</a>
+            <a href="/staff/complaints">Complaints</a>
             <a href="/staff/logout" class="btn-logout">Logout</a>
         </div>
     </nav>

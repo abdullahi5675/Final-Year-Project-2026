@@ -1,0 +1,195 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FUTB NELFUND — Rejected Requests</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', Arial, sans-serif; background-color: #f4f7fa; color: #222; }
+        .navbar { background-color: #152c5b; color: white; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; height: 58px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); position: relative; }
+        .navbar-brand { display: flex; align-items: center; gap: 10px; }
+        .navbar-brand img { height: 38px; width: auto; object-fit: contain; background: white; border-radius: 5px; padding: 2px; }
+        .navbar-title { font-size: 16px; font-weight: 700; }
+        .navbar-right { display: flex; align-items: center; gap: 4px; }
+        .navbar a { color: white; text-decoration: none; font-size: 13px; font-weight: 500; padding: 7px 14px; border-radius: 6px; transition: background 0.2s; }
+        .navbar a:hover { background: rgba(255,255,255,0.15); }
+        .navbar .btn-logout { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.3); }
+        .navbar a.active-link { background: rgba(255,255,255,0.22); }
+        .navbar-toggle { display: none; flex-direction: column; justify-content: space-between; width: 24px; height: 18px; background: transparent; border: none; cursor: pointer; padding: 0; z-index: 1001; }
+        .navbar-toggle .bar { height: 3px; width: 100%; background-color: white; border-radius: 10px; transition: all 0.3s ease; }
+        .container { max-width: 1200px; margin: 32px auto; padding: 0 24px; }
+        .page-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 24px; padding-bottom: 18px; border-bottom: 2px solid #dbeafe; flex-wrap: wrap; }
+        .page-heading { font-size: 22px; font-weight: 700; color: #152c5b; }
+        .page-sub { font-size: 13px; color: #6b7280; margin-top: 4px; }
+        .btn-export { display: inline-flex; align-items: center; gap: 8px; padding: 11px 22px; background: #1e40af; color: white; text-decoration: none; border-radius: 8px; font-size: 13px; font-weight: 700; letter-spacing: 0.3px; transition: background 0.2s, transform 0.1s; white-space: nowrap; }
+        .btn-export:hover { background: #1d4ed8; transform: translateY(-1px); }
+        .btn-export:active { transform: translateY(0); }
+        .summary-bar { display: flex; align-items: center; gap: 10px; background: #fff1f2; border: 1.5px solid #fecdd3; border-radius: 10px; padding: 14px 20px; margin-bottom: 24px; }
+        .summary-bar .summary-icon { font-size: 22px; }
+        .summary-bar .summary-count { font-size: 22px; font-weight: 700; color: #be123c; }
+        .summary-bar .summary-text { font-size: 14px; color: #6b7280; }
+        .card { background: white; border: 1.5px solid #dbeafe; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(21,44,91,0.06); }
+        .card-header { background: #152c5b; color: white; padding: 14px 20px; font-size: 14px; font-weight: 700; letter-spacing: 0.3px; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; }
+        .card-header .record-count { font-size: 12px; font-weight: 600; background: rgba(255,255,255,0.18); padding: 3px 10px; border-radius: 20px; letter-spacing: 0; text-transform: none; }
+        .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 860px; }
+        thead th { background: #eff6ff; color: #1e3a8a; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; padding: 12px 16px; text-align: left; border-bottom: 1.5px solid #bfdbfe; white-space: nowrap; }
+        tbody tr { border-bottom: 1px solid #f0f4f8; transition: background 0.15s; }
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: #f8faff; }
+        td { padding: 13px 16px; vertical-align: top; color: #333; line-height: 1.45; }
+        td.sn-col { color: #9ca3af; font-size: 12px; font-weight: 600; width: 48px; }
+        td.reg-col { font-family: monospace; font-size: 12.5px; color: #152c5b; font-weight: 600; }
+        td.name-col { font-weight: 600; }
+        td.reason-col { color: #6b7280; font-size: 12.5px; max-width: 240px; }
+        .badge-payment { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; white-space: nowrap; }
+        .rejected-by { font-size: 12px; color: #6b7280; }
+        .rejected-by strong { color: #374151; display: block; margin-bottom: 1px; }
+        .date-cell { font-size: 12px; color: #6b7280; white-space: nowrap; }
+        .empty-state { padding: 60px 24px; text-align: center; }
+        .empty-state .empty-icon { font-size: 48px; margin-bottom: 16px; }
+        .empty-state h3 { font-size: 18px; font-weight: 700; color: #152c5b; margin-bottom: 8px; }
+        .empty-state p { font-size: 14px; color: #6b7280; }
+        @media (max-width: 768px) {
+            .navbar-toggle { display: flex; }
+            .navbar-toggle.active .bar:nth-child(1) { transform: translateY(7.5px) rotate(45deg); }
+            .navbar-toggle.active .bar:nth-child(2) { opacity: 0; }
+            .navbar-toggle.active .bar:nth-child(3) { transform: translateY(-7.5px) rotate(-45deg); }
+            .navbar-right { display: none; flex-direction: column; position: absolute; top: 100%; left: 0; width: 100%; background-color: #152c5b; padding: 16px 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); z-index: 999; gap: 12px; align-items: stretch; }
+            .navbar-right.active { display: flex; }
+            .navbar a { text-align: center; width: 100%; padding: 10px; }
+            .container { margin: 20px auto; padding: 0 16px; }
+            .page-header { flex-direction: column; align-items: flex-start; }
+            .btn-export { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <img src="/FUTBBBBBBB.png" alt="FUTB Logo">
+            <span class="navbar-title">NELFUND Staff Portal</span>
+        </div>
+        <button class="navbar-toggle" id="navbarToggle" aria-label="Toggle navigation">
+            <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+        </button>
+        <div class="navbar-right" id="navbarRight">
+            <span style="font-size:13px; margin-right:4px; opacity:0.85;"><%= staff.full_name %></span>
+            <a href="/staff/dashboard">Dashboard</a>
+            <a href="/staff/pending-requests">Pending</a>
+            <a href="/staff/rejected-requests" class="active-link">Rejected</a>
+            <a href="/staff/complaints">Complaints</a>
+            <a href="/staff/logout" class="btn-logout">Logout</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-header">
+            <div>
+                <h1 class="page-heading">Rejected Requests</h1>
+                <div class="page-sub">All refund requests that have been rejected by staff</div>
+            </div>
+            <% if (requests.length > 0) { %>
+                <a href="/staff/rejected-requests/export" class="btn-export">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Export to Excel
+                </a>
+            <% } %>
+        </div>
+
+        <% if (requests.length > 0) { %>
+        <div class="summary-bar">
+            <span class="summary-icon">&#128683;</span>
+            <span class="summary-count"><%= requests.length %></span>
+            <span class="summary-text">rejected refund request<%= requests.length !== 1 ? 's' : '' %> on record</span>
+        </div>
+        <% } %>
+
+        <div class="card">
+            <div class="card-header">
+                Rejected Refund Requests
+                <span class="record-count"><%= requests.length %> record<%= requests.length !== 1 ? 's' : '' %></span>
+            </div>
+
+            <% if (requests.length === 0) { %>
+                <div class="empty-state">
+                    <div class="empty-icon">&#9989;</div>
+                    <h3>No Rejected Requests</h3>
+                    <p>There are currently no rejected refund requests in the system.</p>
+                </div>
+            <% } else { %>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Reg Number</th>
+                            <th>Full Name</th>
+                            <th>Department / Level</th>
+                            <th>Payment Type</th>
+                            <th>Amount (&#8358;)</th>
+                            <th>Rejection Reason</th>
+                            <th>Rejected By</th>
+                            <th>Date Rejected</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% requests.forEach(function(r, index) { %>
+                        <tr>
+                            <td class="sn-col"><%= index + 1 %></td>
+                            <td class="reg-col"><%= r.reg_number %></td>
+                            <td class="name-col"><%= r.full_name %></td>
+                            <td>
+                                <div style="font-size:13px; font-weight:500;"><%= r.department %></div>
+                                <div style="font-size:11.5px; color:#9ca3af; margin-top:2px;">Level <%= r.level %></div>
+                            </td>
+                            <td>
+                                <span class="badge-payment">
+                                    <% if (r.payment_type === 'first_installment') { %>1st Installment<% } else if (r.payment_type === 'second_installment') { %>2nd Installment<% } else { %>Full Payment<% } %>
+                                </span>
+                            </td>
+                            <td style="font-weight:600; white-space:nowrap;">
+                                <% if (r.refund_amount) { %>&#8358;<%= parseFloat(r.refund_amount).toLocaleString('en-NG', {minimumFractionDigits:2}) %><% } else { %><span style="color:#9ca3af;">&#8212;</span><% } %>
+                            </td>
+                            <td class="reason-col"><%= r.rejection_reason || '&#8212;' %></td>
+                            <td>
+                                <div class="rejected-by">
+                                    <strong><%= r.rejected_by_name || 'N/A' %></strong>
+                                    Staff
+                                </div>
+                            </td>
+                            <td class="date-cell">
+                                <% if (r.verified_at) { %><%= new Date(r.verified_at).toLocaleDateString('en-NG', {day:'2-digit', month:'short', year:'numeric'}) %><br><span style="color:#9ca3af;"><%= new Date(r.verified_at).toLocaleTimeString('en-NG', {hour:'2-digit', minute:'2-digit'}) %></span><% } else { %><span style="color:#9ca3af;">&#8212;</span><% } %>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+            <% } %>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var toggleBtn = document.getElementById('navbarToggle');
+            var navRight  = document.getElementById('navbarRight');
+            if (toggleBtn && navRight) {
+                toggleBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    toggleBtn.classList.toggle('active');
+                    navRight.classList.toggle('active');
+                });
+                document.addEventListener('click', function(e) {
+                    if (navRight.classList.contains('active') && !navRight.contains(e.target) && !toggleBtn.contains(e.target)) {
+                        toggleBtn.classList.remove('active');
+                        navRight.classList.remove('active');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

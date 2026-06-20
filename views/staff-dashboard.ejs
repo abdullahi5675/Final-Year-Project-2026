@@ -308,6 +308,8 @@
         <div class="navbar-right" id="navbarRight">
             <span class="user-name"><%= staff.full_name %></span>
             <a href="/staff/dashboard">Dashboard</a>
+            <a href="/staff/pending-requests">Pending</a>
+            <a href="/staff/rejected-requests">Rejected</a>
             <a href="/staff/complaints">Complaints</a>
             <a href="/staff/logout" class="btn-logout">Logout</a>
         </div>
@@ -327,6 +329,10 @@
                 <div class="stat-number"><%= stats.approved %></div>
                 <div class="stat-label">Approved (Unbatched)</div>
             </div>
+            <div class="stat-card" style="border-color:#fecdd3;">
+                <div class="stat-number" style="color:#be123c;"><%= stats.rejected %></div>
+                <div class="stat-label">Rejected Requests</div>
+            </div>
             <div class="stat-card">
                 <div class="stat-number"><%= stats.totalStudents %></div>
                 <div class="stat-label">Total Students</div>
@@ -341,17 +347,22 @@
         <div class="section-title">Quick Actions</div>
         <div class="actions-grid">
             <a href="/staff/upload-list" class="action-card">
-                <div class="action-icon">📤</div>
+                <div class="action-icon">&#128228;</div>
                 <div class="action-title">Upload NELFUND List</div>
                 <div class="action-desc">Upload the approved student list received from NELFUND</div>
             </a>
             <a href="/staff/pending-requests" class="action-card">
-                <div class="action-icon">📋</div>
+                <div class="action-icon">&#128203;</div>
                 <div class="action-title">Pending Requests</div>
                 <div class="action-desc">Review, approve, or reject student refund requests</div>
             </a>
+            <a href="/staff/rejected-requests" class="action-card" style="border-color:#fecdd3;">
+                <div class="action-icon">&#128683;</div>
+                <div class="action-title">Rejected Requests</div>
+                <div class="action-desc">View all rejected requests and export them as Excel</div>
+            </a>
             <a href="/staff/generate-batch" class="action-card">
-                <div class="action-icon">📊</div>
+                <div class="action-icon">&#128202;</div>
                 <div class="action-title">Generate Batch</div>
                 <div class="action-desc">Export approved requests as Excel file for the Bursary</div>
             </a>

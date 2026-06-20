@@ -40,13 +40,18 @@ router.get('/dashboard', requireStaffAuth, async (req, res) => {
             'SELECT COUNT(*) as count FROM refund_requests'
         );
 
+        const [rejectedCount] = await db.query(
+            `SELECT COUNT(*) as count FROM refund_requests WHERE status = 'rejected'`
+        );
+
         res.render('staff-dashboard', {
             staff: req.session.staff,
             stats: {
                 pending: pendingCount[0].count,
                 approved: approvedCount[0].count,
                 totalStudents: totalStudents[0].count,
-                totalRequests: totalRequests[0].count
+                totalRequests: totalRequests[0].count,
+                rejected: rejectedCount[0].count
             }
         });
 
@@ -371,6 +376,126 @@ router.post('/complaints/:id/reply', requireStaffAuth, async (req, res) => {
     } catch (error) {
         console.error('Reply error:', error);
         res.send('An error occurred');
+    }
+});
+
+// View rejected requests
+router.get('/rejected-requests', requireStaffAuth, async (req, res) => {
+    try {
+        const [requests] = await db.query(
+            `SELECT rr.*, s.full_name, s.department, s.level,
+                    st.full_name AS rejected_by_name
+             FROM refund_requests rr
+             JOIN students s ON rr.reg_number = s.reg_number
+             LEFT JOIN staff st ON rr.verified_by = st.staff_id
+             WHERE rr.status = 'rejected'
+             ORDER BY rr.verified_at DESC`
+        );
+
+        res.render('rejected-requests', {
+            staff: req.session.staff,
+            requests
+        });
+
+    } catch (error) {
+        console.error('Rejected requests error:', error);
+        res.send('An error occurred');
+    }
+});
+
+// Export rejected requests as Excel
+router.get('/rejected-requests/export', requireStaffAuth, async (req, res) => {
+    try {
+        const [requests] = await db.query(
+            `SELECT rr.reg_number, s.full_name, s.department, s.level,
+                    rr.payment_type, rr.refund_amount, rr.rejection_reason,
+                    st.full_name AS rejected_by_name, rr.verified_at
+             FROM refund_requests rr
+             JOIN students s ON rr.reg_number = s.reg_number
+             LEFT JOIN staff st ON rr.verified_by = st.staff_id
+             WHERE rr.status = 'rejected'
+             ORDER BY rr.verified_at DESC`
+        );
+
+        const workbook = new ExcelJS.Workbook();
+        workbook.creator = 'FUTB NELFUND Refund Portal';
+        workbook.created = new Date();
+
+        const worksheet = workbook.addWorksheet('Rejected Requests');
+
+        // Style the header row
+        worksheet.columns = [
+            { header: 'S/N',              key: 'sn',              width: 6  },
+            { header: 'Reg Number',       key: 'reg_number',      width: 20 },
+            { header: 'Full Name',        key: 'full_name',       width: 28 },
+            { header: 'Department',       key: 'department',      width: 28 },
+            { header: 'Level',            key: 'level',           width: 10 },
+            { header: 'Payment Type',     key: 'payment_type',    width: 20 },
+            { header: 'Amount (₦)',       key: 'refund_amount',   width: 16 },
+            { header: 'Rejection Reason', key: 'rejection_reason',width: 40 },
+            { header: 'Rejected By',      key: 'rejected_by',     width: 22 },
+            { header: 'Date Rejected',    key: 'date_rejected',   width: 22 }
+        ];
+
+        // Style header
+        worksheet.getRow(1).eachCell((cell) => {
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF152C5B' } };
+            cell.font  = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+            cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+            cell.border = {
+                top:    { style: 'thin', color: { argb: 'FFB0C4DE' } },
+                bottom: { style: 'thin', color: { argb: 'FFB0C4DE' } },
+                left:   { style: 'thin', color: { argb: 'FFB0C4DE' } },
+                right:  { style: 'thin', color: { argb: 'FFB0C4DE' } }
+            };
+        });
+        worksheet.getRow(1).height = 30;
+
+        // Add data rows
+        requests.forEach((r, i) => {
+            const paymentLabel = r.payment_type === 'first_installment'  ? 'First Installment'
+                               : r.payment_type === 'second_installment' ? 'Second Installment'
+                               : 'Full Payment';
+
+            const row = worksheet.addRow({
+                sn:               i + 1,
+                reg_number:       r.reg_number,
+                full_name:        r.full_name,
+                department:       r.department,
+                level:            r.level,
+                payment_type:     paymentLabel,
+                refund_amount:    r.refund_amount ? parseFloat(r.refund_amount) : '',
+                rejection_reason: r.rejection_reason || '',
+                rejected_by:      r.rejected_by_name || 'N/A',
+                date_rejected:    r.verified_at ? new Date(r.verified_at).toLocaleString('en-NG') : ''
+            });
+
+            // Zebra stripe
+            if (i % 2 === 1) {
+                row.eachCell((cell) => {
+                    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEFF6FF' } };
+                });
+            }
+
+            // Format amount as currency
+            row.getCell('refund_amount').numFmt = '₦#,##0.00';
+            row.alignment = { wrapText: true, vertical: 'top' };
+        });
+
+        // Freeze top row
+        worksheet.views = [{ state: 'frozen', ySplit: 1 }];
+
+        // Set response headers and stream
+        const fileName = `Rejected-Requests-${new Date().toISOString().split('T')[0]}.xlsx`;
+        res.setHeader('Content-Type',        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+
+        await workbook.xlsx.write(res);
+        res.end();
+
+    } catch (error) {
+        console.error('Export error:', error);
+        res.status(500).send('An error occurred while generating the export');
     }
 });
 
