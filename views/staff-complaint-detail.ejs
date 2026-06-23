@@ -1,422 +1,81 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NELFUND — Complaint Detail</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+<%- include('partials/header', { title: 'NELFUND — Complaint Detail' }) %>
 
-        body {
-            font-family: 'Inter', Arial, sans-serif;
-            background-color: #f4f7fa;
-            color: #222;
-        }
+    <%- include('partials/navbar-staff', { staff, activePage: 'complaints' }) %>
 
-        .navbar {
-            background-color: #152c5b;
-            color: white;
-            padding: 0 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 58px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-        }
-
-        .navbar-title { font-size: 16px; font-weight: 700; }
-        .navbar-right { display: flex; align-items: center; gap: 4px; }
-
-        .navbar a {
-            color: white;
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 500;
-            padding: 7px 14px;
-            border-radius: 6px;
-            transition: background 0.2s;
-        }
-
-        .navbar a:hover { background: rgba(255,255,255,0.15); }
-        .navbar .btn-logout { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.3); }
-        .navbar a.active-link { background: rgba(255,255,255,0.22); }
-
-        .container {
-            max-width: 900px;
-            margin: 32px auto;
-            padding: 0 24px;
-        }
-
-        .btn-back {
-            display: inline-block;
-            padding: 9px 16px;
-            background: white;
-            border: 1.5px solid #cbd5e1;
-            color: #1e40af;
-            text-decoration: none;
-            border-radius: 7px;
-            font-size: 13px;
-            font-weight: 600;
-            margin-bottom: 22px;
-            transition: background 0.2s;
-        }
-
-        .btn-back:hover { background: #eff6ff; }
-
-        .card {
-            background: white;
-            border: 1.5px solid #dbeafe;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(21,44,91,0.04);
-            margin-bottom: 20px;
-        }
-
-        .card-header {
-            background: #152c5b;
-            color: white;
-            padding: 14px 20px;
-            font-size: 14px;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-            text-transform: uppercase;
-        }
-
-        .card-body { padding: 22px; }
-
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-        }
-
-        .info-item {}
-
-        .info-label {
-            font-size: 11px;
-            font-weight: 600;
-            color: #1e40af;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 4px;
-        }
-
-        .info-value {
-            font-size: 14px;
-            color: #333;
-            font-weight: 500;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-        }
-
-        .badge-pending { background: #fff3cd; color: #856404; border: 1px solid #ffc107; }
-        .badge-answered { background: #d4edda; color: #155724; border: 1px solid #28a745; }
-
-        .message-block {
-            margin-top: 18px;
-        }
-
-        .message-block .msg-label {
-            font-size: 12px;
-            font-weight: 600;
-            color: #1e40af;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 8px;
-        }
-
-        .message-box {
-            background: #f8fafc;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            padding: 14px 16px;
-            font-size: 14px;
-            line-height: 1.65;
-            color: #333;
-        }
-
-        .message-box.reply-box {
-            background: #eff6ff;
-            border-color: #bfdbfe;
-            border-left: 4px solid #1e40af;
-        }
-
-        /* ── Reply Form ── */
-        label {
-            display: block;
-            font-size: 12.5px;
-            font-weight: 600;
-            color: #152c5b;
-            margin-bottom: 7px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-
-        textarea {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 8px;
-            font-family: inherit;
-            font-size: 14px;
-            min-height: 120px;
-            resize: vertical;
-            background: #f8fafc;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-
-        textarea:focus {
-            outline: none;
-            border-color: #1e40af;
-            box-shadow: 0 0 0 3px rgba(30,64,175,0.12);
-        }
-
-        .btn-send {
-            margin-top: 14px;
-            padding: 13px 30px;
-            background: #1e40af;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: background 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 0.4px;
-        }
-
-        .btn-send:hover { background: #1d4ed8; }
-
-        /* ── Responsive Styling ── */
-        .navbar {
-            position: relative;
-        }
-
-        .navbar-toggle {
-            display: none;
-            flex-direction: column;
-            justify-content: space-between;
-            width: 24px;
-            height: 18px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            padding: 0;
-            z-index: 1001;
-        }
-
-        .navbar-toggle .bar {
-            height: 3px;
-            width: 100%;
-            background-color: white;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-
-        @media (max-width: 768px) {
-            .navbar-toggle {
-                display: flex;
-            }
-
-            .navbar-toggle.active .bar:nth-child(1) {
-                transform: translateY(7.5px) rotate(45deg);
-            }
-            .navbar-toggle.active .bar:nth-child(2) {
-                opacity: 0;
-            }
-            .navbar-toggle.active .bar:nth-child(3) {
-                transform: translateY(-7.5px) rotate(-45deg);
-            }
-
-            .navbar-right {
-                display: none;
-                flex-direction: column;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                width: 100%;
-                background-color: #152c5b;
-                padding: 16px 24px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                z-index: 999;
-                gap: 12px;
-                align-items: stretch;
-            }
-
-            .navbar-right.active {
-                display: flex;
-            }
-
-            .navbar-right span {
-                margin-right: 0 !important;
-                margin-bottom: 6px;
-                text-align: center;
-                display: block;
-                background: rgba(255, 255, 255, 0.12);
-                padding: 6px;
-                border-radius: 20px;
-            }
-
-            .navbar a {
-                text-align: center;
-                width: 100%;
-                padding: 10px;
-            }
-
-            .container {
-                margin: 20px auto;
-                padding: 0 16px;
-            }
-
-            .card {
-                padding: 16px;
-            }
-
-            .card-body {
-                padding: 16px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <nav class="navbar">
-        <div class="navbar-title">NELFUND Staff Portal</div>
-        <!-- Hamburger Menu Button -->
-        <button class="navbar-toggle" id="navbarToggle" aria-label="Toggle navigation">
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
-        </button>
-        <div class="navbar-right" id="navbarRight">
-            <span style="font-size:13px; margin-right:6px; opacity:0.85;"><%= staff.full_name %></span>
-            <a href="/staff/dashboard">Dashboard</a>
-            <a href="/staff/pending-requests">Pending</a>
-            <a href="/staff/rejected-requests">Rejected</a>
-            <a href="/staff/complaints" class="active-link">Complaints</a>
-            <a href="/staff/logout" class="btn-logout">Logout</a>
-        </div>
-    </nav>
-
-    <div class="container">
+    <div class="container container-sm">
         <a href="/staff/complaints" class="btn-back">&larr; Back to Complaints</a>
+        <h1 class="page-heading">Reply to Complaint</h1>
 
-        <!-- Student Info -->
-        <div class="card">
-            <div class="card-header">Student Information</div>
-            <div class="card-body">
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">Full Name</div>
-                        <div class="info-value"><%= complaint.full_name %></div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Reg. Number</div>
-                        <div class="info-value"><%= complaint.reg_number %></div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Department</div>
-                        <div class="info-value"><%= complaint.department %></div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Level</div>
-                        <div class="info-value"><%= complaint.level %></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+
 
         <!-- Complaint Details -->
-        <div class="card">
-            <div class="card-header">Complaint Details</div>
-            <div class="card-body">
-                <div class="info-grid" style="margin-bottom:16px;">
-                    <div class="info-item">
-                        <div class="info-label">Subject</div>
-                        <div class="info-value" style="font-weight:600;"><%= complaint.subject %></div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Date Submitted</div>
-                        <div class="info-value"><%= new Date(complaint.created_at).toLocaleString() %></div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">Status</div>
-                        <div class="info-value" style="margin-top:2px;">
-                            <span class="badge badge-<%= complaint.status %>">
-                                <%= complaint.status.toUpperCase() %>
-                            </span>
-                        </div>
+        <div class="card-padded" style="margin-bottom:22px;">
+            <div class="card-header" style="margin: -24px -24px 20px; border-radius:10px 10px 0 0;">Complaint Details</div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">Student</div>
+                    <div class="info-value"><%= complaint.full_name %></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Reg. Number</div>
+                    <div class="info-value"><%= complaint.reg_number %></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Date Submitted</div>
+                    <div class="info-value"><%= new Date(complaint.created_at).toLocaleString() %></div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Status</div>
+                    <div class="info-value" style="margin-top:4px;">
+                        <span class="badge badge-<%= complaint.status %>">
+                            <%= complaint.status.toUpperCase() %>
+                        </span>
                     </div>
                 </div>
+            </div>
 
-                <div class="message-block">
-                    <div class="msg-label">Message</div>
-                    <div class="message-box"><%= complaint.message %></div>
+            <hr class="divider">
+
+            <div style="margin-bottom:12px;">
+                <div class="info-label">Subject</div>
+                <div class="info-value" style="font-size:16px; font-weight:700; color:#152c5b; margin-top:4px;">
+                    <%= complaint.subject %>
                 </div>
             </div>
-        </div>
 
-        <!-- Reply Section -->
-        <div class="card">
-            <div class="card-header">Staff Reply</div>
-            <div class="card-body">
-
-                <% if (complaint.status === 'answered') { %>
-                    <div class="info-grid" style="margin-bottom:14px;">
-                        <div class="info-item">
-                            <div class="info-label">Replied By</div>
-                            <div class="info-value"><%= complaint.staff_name %></div>
-                        </div>
-                        <div class="info-item">
-                            <div class="info-label">Date Replied</div>
-                            <div class="info-value"><%= new Date(complaint.replied_at).toLocaleString() %></div>
-                        </div>
-                    </div>
-                    <div class="message-block">
-                        <div class="msg-label">Reply Content</div>
-                        <div class="message-box reply-box"><%= complaint.reply %></div>
-                    </div>
-
-                <% } else { %>
-                    <form action="/staff/complaints/<%= complaint.complaint_id %>/reply" method="POST">
-                        <label for="reply">Write a Reply <span style="color:#c0392b">*</span></label>
-                        <textarea id="reply" name="reply" rows="5" required
-                            placeholder="Type your response to the student here..."></textarea>
-                        <button type="submit" class="btn-send">Send Reply</button>
-                    </form>
-                <% } %>
-
+            <div>
+                <div class="info-label">Message</div>
+                <div style="font-size:14px; color:#333; line-height:1.7; margin-top:6px; background:#f8fafc; border-radius:8px; padding:14px 16px; border:1px solid #e2e8f0;">
+                    <%= complaint.message %>
+                </div>
             </div>
+
+            <% if (complaint.status === 'answered') { %>
+                <hr class="divider">
+                <div class="reply-box">
+                    <div class="reply-label">Your Reply</div>
+                    <%= complaint.reply %>
+                    <div class="reply-date">
+                        Replied: <%= new Date(complaint.replied_at).toLocaleString() %>
+                    </div>
+                </div>
+            <% } %>
         </div>
+
+        <!-- Reply Form (only if pending) -->
+        <% if (complaint.status !== 'answered') { %>
+        <div class="card-padded">
+            <div class="card-header" style="margin: -24px -24px 20px; border-radius:10px 10px 0 0;">Write Reply</div>
+            <form action="/staff/complaints/<%= complaint.complaint_id %>/reply" method="POST">
+                <div class="form-group">
+                    <label for="reply">Your Response <span style="color:#c0392b">*</span></label>
+                    <textarea id="reply" name="reply" required rows="5"
+                        placeholder="Type your reply here..."></textarea>
+                </div>
+                <button type="submit" class="btn-submit">&#10003; Send Reply</button>
+            </form>
+        </div>
+        <% } %>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const toggleBtn = document.getElementById('navbarToggle');
-            const navRight = document.getElementById('navbarRight');
-
-            if (toggleBtn && navRight) {
-                toggleBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    toggleBtn.classList.toggle('active');
-                    navRight.classList.toggle('active');
-                });
-
-                document.addEventListener('click', (e) => {
-                    if (navRight.classList.contains('active') && !navRight.contains(e.target) && !toggleBtn.contains(e.target)) {
-                        toggleBtn.classList.remove('active');
-                        navRight.classList.remove('active');
-                    }
-                });
-            }
-        });
-    </script>
-</body>
-</html>
+<%- include('partials/footer') %>

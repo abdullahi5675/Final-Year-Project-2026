@@ -1,384 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NELFUND — Submit Refund Request</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+<%- include('partials/header', { title: 'NELFUND — Submit Refund Request', extraCss: `
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+<style>
+    /* File upload styling override */
+    input[type="file"] { background: #eff6ff; border: 1.5px dashed #1e40af; }
+    /* Inline error banner (JS-controlled) */
+    .alert-error-dynamic { display: none; padding: 13px 16px; border-radius: 8px; margin-bottom: 18px;
+        font-size: 13.5px; line-height: 1.55; background: #fdf2f3; color: #8b1a27; border: 1px solid #f5c6cb; }
+</style>
+` }) %>
 
-        body {
-            font-family: 'Inter', Arial, sans-serif;
-            background-color: #f4f7fa;
-            color: #222;
-        }
-
-        /* ── Navbar (no logos on inner pages) ── */
-        .navbar {
-            background-color: #152c5b;
-            color: white;
-            padding: 0 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 58px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-        }
-
-        .navbar-title {
-            font-size: 16px;
-            font-weight: 700;
-            letter-spacing: 0.2px;
-        }
-
-        .navbar-right { display: flex; align-items: center; gap: 4px; }
-
-        .navbar a {
-            color: white;
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 500;
-            padding: 7px 14px;
-            border-radius: 6px;
-            transition: background 0.2s;
-        }
-
-        .navbar a:hover { background: rgba(255,255,255,0.15); }
-
-        .navbar .btn-logout {
-            background: rgba(255,255,255,0.12);
-            border: 1px solid rgba(255,255,255,0.3);
-        }
-
-        /* ── Page layout ── */
-        .container {
-            max-width: 760px;
-            margin: 32px auto;
-            padding: 0 24px;
-        }
-
-        .page-heading {
-            font-size: 21px;
-            font-weight: 700;
-            color: #152c5b;
-            margin-bottom: 20px;
-        }
-
-        /* ── Alerts ── */
-        .alert {
-            padding: 13px 16px;
-            border-radius: 8px;
-            margin-bottom: 18px;
-            font-size: 13.5px;
-            line-height: 1.55;
-        }
-
-        .alert-info { background: #eff6ff; color: #1e3a8a; border: 1px solid #bfdbfe; }
-        .alert-error { background: #fdf2f3; color: #8b1a27; border: 1px solid #f5c6cb; }
-
-        /* ── Form Card ── */
-        .form-card {
-            background: white;
-            border: 1.5px solid #dbeafe;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 12px rgba(21,44,91,0.04);
-            margin-bottom: 24px;
-        }
-
-        .form-section-header {
-            background: #152c5b;
-            color: white;
-            padding: 14px 24px;
-            font-size: 14px;
-            font-weight: 700;
-            letter-spacing: 0.4px;
-            text-transform: uppercase;
-        }
-
-        .form-section-body {
-            padding: 24px;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .form-row.single { grid-template-columns: 1fr; }
-
-        @media (max-width: 600px) {
-            .form-row { grid-template-columns: 1fr; }
-        }
-
-        .form-group { margin-bottom: 20px; }
-        .form-group:last-child { margin-bottom: 0; }
-
-        label {
-            display: block;
-            font-size: 12.5px;
-            font-weight: 600;
-            color: #152c5b;
-            margin-bottom: 7px;
-            letter-spacing: 0.3px;
-            text-transform: uppercase;
-        }
-
-        input[type="text"],
-        input[type="number"],
-        select {
-            width: 100%;
-            padding: 12px 14px;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 14px;
-            font-family: inherit;
-            color: #222;
-            background: #f8fafc;
-            transition: border-color 0.2s, box-shadow 0.2s;
-            appearance: auto;
-        }
-
-        input[type="text"]:focus,
-        input[type="number"]:focus,
-        select:focus {
-            outline: none;
-            border-color: #1e40af;
-            box-shadow: 0 0 0 3px rgba(30,64,175,0.12);
-        }
-
-        /* File upload styling */
-        .file-upload-wrapper {
-            position: relative;
-        }
-
-        input[type="file"] {
-            width: 100%;
-            padding: 11px 14px;
-            border: 1.5px dashed #1e40af;
-            border-radius: 8px;
-            font-size: 13px;
-            font-family: inherit;
-            background: #eff6ff;
-            cursor: pointer;
-            color: #333;
-        }
-
-        .field-hint {
-            font-size: 11.5px;
-            color: #777;
-            margin-top: 5px;
-        }
-
-        /* Inline field-level error */
-        .field-error {
-            font-size: 11.5px;
-            color: #c0392b;
-            margin-top: 5px;
-            display: none;
-        }
-
-        input.input-invalid {
-            border-color: #e74c3c !important;
-            box-shadow: 0 0 0 3px rgba(231,76,60,0.12) !important;
-        }
-
-        input.input-valid {
-            border-color: #1e40af !important;
-        }
-
-        /* ── Submit Button ── */
-        .btn-submit {
-            width: 100%;
-            padding: 15px;
-            background-color: #1e40af;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-            text-transform: uppercase;
-        }
-
-        .btn-submit:hover { background-color: #1d4ed8; }
-        .btn-submit:active { transform: scale(0.99); }
-        .btn-submit:disabled { background-color: #6c757d; cursor: not-allowed; opacity: 0.75; }
-
-        /* ── Loading Overlay ── */
-        .loading-overlay {
-            display: none;
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(255,255,255,0.92);
-            z-index: 9999;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 20px;
-        }
-        .loading-overlay.active { display: flex; }
-        .loading-spinner {
-            width: 52px; height: 52px;
-            border: 5px solid #dbeafe;
-            border-top-color: #1e40af;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loading-text {
-            font-size: 17px;
-            font-weight: 600;
-            color: #152c5b;
-            letter-spacing: 0.3px;
-        }
-        .loading-sub {
-            font-size: 13px;
-            color: #666;
-            margin-top: -10px;
-        }
-
-        /* ── Inline error banner (shown by JS) ── */
-        .alert-error-dynamic {
-            display: none;
-            padding: 13px 16px;
-            border-radius: 8px;
-            margin-bottom: 18px;
-            font-size: 13.5px;
-            line-height: 1.55;
-            background: #fdf2f3;
-            color: #8b1a27;
-            border: 1px solid #f5c6cb;
-        }
-
-        /* ── Modal ── */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.6);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 1000; opacity: 0; pointer-events: none;
-            transition: opacity 0.3s;
-        }
-        .modal-overlay.active { opacity: 1; pointer-events: auto; }
-        .modal-card {
-            background: white; border-radius: 12px; width: 90%; max-width: 450px;
-            padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            transform: translateY(20px); transition: transform 0.3s;
-        }
-        .modal-overlay.active .modal-card { transform: translateY(0); }
-        .modal-title { font-size: 18px; font-weight: 700; color: #152c5b; margin-bottom: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        .modal-detail { margin-bottom: 10px; font-size: 14px; }
-        .modal-detail strong { color: #555; display: inline-block; width: 140px; }
-        .modal-actions { display: flex; gap: 12px; margin-top: 24px; }
-        .btn-edit { flex: 1; padding: 12px; background: #f0f0f0; color: #333; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-        .btn-edit:hover { background: #e4e4e4; }
-        .btn-confirm { flex: 1; padding: 12px; background: #1e40af; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-        .btn-confirm:hover { background: #1d4ed8; }
-        
-        /* Select2 override */
-        .select2-container .select2-selection--single { height: 44px; border: 1.5px solid #cbd5e1; border-radius: 8px; background: #f8fafc; display: flex; align-items: center; }
-        .select2-container--default .select2-selection--single .select2-selection__arrow { height: 42px; }
-        .select2-container--default .select2-selection--single .select2-selection__rendered { color: #222; font-size: 14px; padding-left: 14px; }
-
-        /* ── Responsive Styling ── */
-        .navbar {
-            position: relative;
-        }
-
-        .navbar-toggle {
-            display: none;
-            flex-direction: column;
-            justify-content: space-between;
-            width: 24px;
-            height: 18px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            padding: 0;
-            z-index: 1001;
-        }
-
-        .navbar-toggle .bar {
-            height: 3px;
-            width: 100%;
-            background-color: white;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-        }
-
-        @media (max-width: 768px) {
-            .navbar-toggle {
-                display: flex;
-            }
-
-            .navbar-toggle.active .bar:nth-child(1) {
-                transform: translateY(7.5px) rotate(45deg);
-            }
-            .navbar-toggle.active .bar:nth-child(2) {
-                opacity: 0;
-            }
-            .navbar-toggle.active .bar:nth-child(3) {
-                transform: translateY(-7.5px) rotate(-45deg);
-            }
-
-            .navbar-right {
-                display: none;
-                flex-direction: column;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                width: 100%;
-                background-color: #152c5b;
-                padding: 16px 24px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                z-index: 999;
-                gap: 12px;
-                align-items: stretch;
-            }
-
-            .navbar-right.active {
-                display: flex;
-            }
-
-            .navbar a {
-                text-align: center;
-                width: 100%;
-                padding: 10px;
-            }
-
-            .container {
-                margin: 20px auto;
-                padding: 0 16px;
-            }
-
-            .form-card {
-                margin-bottom: 16px;
-            }
-
-            .form-section-body {
-                padding: 16px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Navbar (no logos on inner pages) -->
-    <nav class="navbar">
-        <div class="navbar-title">NELFUND Refund Portal</div>
-        <!-- Hamburger Menu Button -->
-        <button class="navbar-toggle" id="navbarToggle" aria-label="Toggle navigation">
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
-        </button>
-        <div class="navbar-right" id="navbarRight">
-            <a href="/student/dashboard">Dashboard</a>
-            <a href="/logout" class="btn-logout">Logout</a>
-        </div>
-    </nav>
+    <%- include('partials/navbar-student', { student, activePage: '' }) %>
 
     <!-- Loading Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
@@ -387,7 +18,7 @@
         <div class="loading-sub">Please wait, do not close this page.</div>
     </div>
 
-    <div class="container">
+    <div class="container container-sm">
         <h1 class="page-heading">Submit Refund Request</h1>
 
         <div class="alert alert-info">
@@ -432,8 +63,7 @@
                             <label for="remita_number">Remita RRR Number <span style="color:#c0392b">*</span></label>
                             <input type="text" name="remita_number" id="remita_number"
                                 placeholder="e.g. 191397281991"
-                                maxlength="12"
-                                minlength="12"
+                                maxlength="12" minlength="12"
                                 inputmode="numeric"
                                 pattern="[0-9]{12}"
                                 autocomplete="off"
@@ -474,8 +104,7 @@
                             <label for="account_number">Account Number <span style="color:#c0392b">*</span></label>
                             <input type="text" name="account_number" id="account_number" required
                                 placeholder="10-digit NUBAN number"
-                                maxlength="10"
-                                minlength="10"
+                                maxlength="10" minlength="10"
                                 inputmode="numeric"
                                 pattern="[0-9]{10}"
                                 autocomplete="off">
@@ -516,7 +145,6 @@
 
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script>
@@ -561,7 +189,6 @@
             dynamicError.textContent = '';
         }
 
-        // ── Helper: show/hide per-field inline error ──────────────────────
         function setFieldError(inputEl, errorEl, hasError) {
             if (hasError) {
                 inputEl.classList.add('input-invalid');
@@ -579,7 +206,6 @@
         const remitaError = document.getElementById('remita_number_error');
 
         remitaInput.addEventListener('input', function () {
-            // Strip any non-digit characters the user somehow pastes in
             this.value = this.value.replace(/[^0-9]/g, '');
             if (this.value.length > 0) {
                 setFieldError(this, remitaError, this.value.length !== 12);
@@ -588,20 +214,15 @@
                 remitaError.style.display = 'none';
             }
         });
-
-        remitaInput.addEventListener('keypress', function (e) {
-            if (!/[0-9]/.test(e.key)) e.preventDefault();
-        });
-
+        remitaInput.addEventListener('keypress', function (e) { if (!/[0-9]/.test(e.key)) e.preventDefault(); });
         remitaInput.addEventListener('paste', function (e) {
             e.preventDefault();
             const pasted = (e.clipboardData || window.clipboardData).getData('text');
-            const digitsOnly = pasted.replace(/[^0-9]/g, '').slice(0, 12);
-            this.value = digitsOnly;
+            this.value = pasted.replace(/[^0-9]/g, '').slice(0, 12);
             this.dispatchEvent(new Event('input'));
         });
 
-        // ── Real-time: Account Number — numbers only, 10 digits ───────────
+        // ── Real-time: Account Number ──────────────────────────────────────
         const acctNumInput = document.getElementById('account_number');
         const acctNumError = document.getElementById('account_number_error');
 
@@ -614,46 +235,34 @@
                 acctNumError.style.display = 'none';
             }
         });
-
-        acctNumInput.addEventListener('keypress', function (e) {
-            if (!/[0-9]/.test(e.key)) e.preventDefault();
-        });
-
+        acctNumInput.addEventListener('keypress', function (e) { if (!/[0-9]/.test(e.key)) e.preventDefault(); });
         acctNumInput.addEventListener('paste', function (e) {
             e.preventDefault();
             const pasted = (e.clipboardData || window.clipboardData).getData('text');
-            const digitsOnly = pasted.replace(/[^0-9]/g, '').slice(0, 10);
-            this.value = digitsOnly;
+            this.value = pasted.replace(/[^0-9]/g, '').slice(0, 10);
             this.dispatchEvent(new Event('input'));
         });
 
-        // ── Real-time: Account Name — letters and spaces only ─────────────
+        // ── Real-time: Account Name ────────────────────────────────────────
         const acctNameInput = document.getElementById('account_name');
         const acctNameError = document.getElementById('account_name_error');
 
         acctNameInput.addEventListener('input', function () {
-            // Remove anything that isn't a letter or space
             this.value = this.value.replace(/[^A-Za-z ]/g, '');
             if (this.value.trim().length > 0) {
                 setFieldError(this, acctNameError, false);
             } else if (this.value.length > 0) {
-                // only spaces typed — still invalid
                 setFieldError(this, acctNameError, true);
             } else {
                 this.classList.remove('input-invalid', 'input-valid');
                 acctNameError.style.display = 'none';
             }
         });
-
-        acctNameInput.addEventListener('keypress', function (e) {
-            if (!/[A-Za-z ]/.test(e.key)) e.preventDefault();
-        });
-
+        acctNameInput.addEventListener('keypress', function (e) { if (!/[A-Za-z ]/.test(e.key)) e.preventDefault(); });
         acctNameInput.addEventListener('paste', function (e) {
             e.preventDefault();
             const pasted = (e.clipboardData || window.clipboardData).getData('text');
-            const lettersOnly = pasted.replace(/[^A-Za-z ]/g, '');
-            this.value = lettersOnly;
+            this.value = pasted.replace(/[^A-Za-z ]/g, '');
             this.dispatchEvent(new Event('input'));
         });
 
@@ -664,42 +273,20 @@
 
             let hasErrors = false;
 
-            // Validate File
             const file = document.getElementById('remita_file').files[0];
-            if (!file) {
-                showError('Please upload your Remita document.');
-                return;
-            }
-            if (file.size > 5242880) {
-                showError('File size exceeds 5 MB. Please upload a smaller file.');
-                return;
-            }
+            if (!file) { showError('Please upload your Remita document.'); return; }
+            if (file.size > 5242880) { showError('File size exceeds 5 MB. Please upload a smaller file.'); return; }
 
-            // Validate RRR
             const rrr = remitaInput.value.trim();
-            if (!/^[0-9]{12}$/.test(rrr)) {
-                setFieldError(remitaInput, remitaError, true);
-                hasErrors = true;
-            }
+            if (!/^[0-9]{12}$/.test(rrr)) { setFieldError(remitaInput, remitaError, true); hasErrors = true; }
 
-            // Validate Account Number
             const acct = acctNumInput.value.trim();
-            if (!/^[0-9]{10}$/.test(acct)) {
-                setFieldError(acctNumInput, acctNumError, true);
-                hasErrors = true;
-            }
+            if (!/^[0-9]{10}$/.test(acct)) { setFieldError(acctNumInput, acctNumError, true); hasErrors = true; }
 
-            // Validate Account Name
             const acctName = acctNameInput.value.trim();
-            if (!/^[A-Za-z ]+$/.test(acctName)) {
-                setFieldError(acctNameInput, acctNameError, true);
-                hasErrors = true;
-            }
+            if (!/^[A-Za-z ]+$/.test(acctName)) { setFieldError(acctNameInput, acctNameError, true); hasErrors = true; }
 
-            if (hasErrors) {
-                showError('Please fix the highlighted fields before submitting.');
-                return;
-            }
+            if (hasErrors) { showError('Please fix the highlighted fields before submitting.'); return; }
 
             // Populate and show confirmation modal
             const paymentType     = document.getElementById('payment_type').options[document.getElementById('payment_type').selectedIndex].text;
@@ -719,41 +306,27 @@
             modal.classList.add('active');
         });
 
-        function closeModal() {
-            modal.classList.remove('active');
-        }
+        function closeModal() { modal.classList.remove('active'); }
 
         async function submitForm() {
-            // Close modal and immediately show loading overlay
             modal.classList.remove('active');
             loadingOverlay.classList.add('active');
-
-            // Disable submit button to prevent double-submit
             document.getElementById('submitBtn').disabled = true;
             document.getElementById('btnConfirm').disabled = true;
 
             try {
                 const formData = new FormData(form);
-
-                const response = await fetch('/student/refund-request', {
-                    method: 'POST',
-                    body: formData
-                    // Do NOT set Content-Type — fetch sets it automatically for FormData (multipart)
-                });
-
-                const result = await response.json();
+                const response = await fetch('/student/refund-request', { method: 'POST', body: formData });
+                const result   = await response.json();
 
                 if (result.success) {
-                    // Navigate immediately — no spinner, no waiting
                     window.location.href = result.redirect || '/student/dashboard';
                 } else {
-                    // Hide overlay, show error inline
                     loadingOverlay.classList.remove('active');
                     document.getElementById('submitBtn').disabled = false;
                     document.getElementById('btnConfirm').disabled = false;
                     showError(result.error || 'Submission failed. Please try again.');
                 }
-
             } catch (networkErr) {
                 loadingOverlay.classList.remove('active');
                 document.getElementById('submitBtn').disabled = false;
@@ -761,27 +334,6 @@
                 showError('Network error. Please check your connection and try again.');
             }
         }
-
-        // Navbar mobile toggle script
-        document.addEventListener('DOMContentLoaded', () => {
-            const toggleBtn = document.getElementById('navbarToggle');
-            const navRight = document.getElementById('navbarRight');
-
-            if (toggleBtn && navRight) {
-                toggleBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    toggleBtn.classList.toggle('active');
-                    navRight.classList.toggle('active');
-                });
-
-                document.addEventListener('click', (e) => {
-                    if (navRight.classList.contains('active') && !navRight.contains(e.target) && !toggleBtn.contains(e.target)) {
-                        toggleBtn.classList.remove('active');
-                        navRight.classList.remove('active');
-                    }
-                });
-            }
-        });
     </script>
-</body>
-</html>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,29 @@
+    <%- typeof extraScripts !== 'undefined' ? extraScripts : '' %>
+    <script>
+        // Mobile navbar toggle — shared across all pages
+        document.addEventListener('DOMContentLoaded', function () {
+            var toggleBtn = document.getElementById('navbarToggle');
+            var navRight  = document.getElementById('navbarRight');
+
+            if (toggleBtn && navRight) {
+                toggleBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    toggleBtn.classList.toggle('active');
+                    navRight.classList.toggle('active');
+                });
+
+                document.addEventListener('click', function (e) {
+                    if (
+                        navRight.classList.contains('active') &&
+                        !navRight.contains(e.target) &&
+                        !toggleBtn.contains(e.target)
+                    ) {
+                        toggleBtn.classList.remove('active');
+                        navRight.classList.remove('active');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
