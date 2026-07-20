@@ -148,27 +148,42 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script>
-        // ── Load Banks into Select2 ─────────────────────────────────────────
-        $(document).ready(function() {
-            $('#bank_name').select2({
-                placeholder: "— Select Your Bank —",
-                allowClear: true
-            });
-
+        // ── Load Banks (Vanilla JS, offline-safe fallback) ──────────────────
+        document.addEventListener('DOMContentLoaded', function() {
             fetch('/data/banks.json')
                 .then(response => response.json())
                 .then(data => {
                     const bankSelect = document.getElementById('bank_name');
-                    const bankNames = Object.keys(data).sort();
-                    bankNames.forEach(bank => {
-                        const option = document.createElement('option');
-                        option.value = bank;
-                        option.textContent = bank;
-                        bankSelect.appendChild(option);
-                    });
-                    $('#bank_name').trigger('change');
+                    if (bankSelect) {
+                        const bankNames = Object.keys(data).sort();
+                        bankNames.forEach(bank => {
+                            const option = document.createElement('option');
+                            option.value = bank;
+                            option.textContent = bank;
+                            bankSelect.appendChild(option);
+                        });
+                        
+                        // If jQuery and Select2 libraries loaded successfully, initialize Select2
+                        if (typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
+                            $('#bank_name').select2({
+                                placeholder: "— Select Your Bank —",
+                                allowClear: true
+                            });
+                            $('#bank_name').trigger('change');
+                        }
+                    }
                 })
-                .catch(error => console.error('Error loading banks:', error));
+                .catch(error => {
+                    console.error('Error loading banks:', error);
+                    // Add a default error/fallback option to select manually if file is missing
+                    const bankSelect = document.getElementById('bank_name');
+                    if (bankSelect) {
+                        const option = document.createElement('option');
+                        option.value = "";
+                        option.textContent = "⚠️ Error loading bank list. Please refresh or contact admin.";
+                        bankSelect.appendChild(option);
+                    }
+                });
         });
 
         // ── Form Submission and Modal Logic ────────────────────────────────
