@@ -1,43 +1,25 @@
     <% if (typeof bodyClass === 'undefined' || bodyClass !== 'login-body') { %>
-    <!-- Beautiful Visible Footer -->
+    <!-- Simple Compact Footer -->
     <footer class="site-footer">
         <div class="footer-container">
             <div class="footer-col">
                 <h4>FUT Babura</h4>
                 <p>NELFUND School Fees Refund Portal for the Federal University of Technology, Babura, Jigawa State.</p>
-                <p>Helping students process their official NELFUND refund requests securely and transparently.</p>
             </div>
             <div class="footer-col">
                 <h4>Quick Links</h4>
                 <ul class="footer-links">
                     <% if (typeof student !== 'undefined' || (typeof session !== 'undefined' && session.student)) { %>
-                        <li><a href="/student/dashboard">&rarr; Dashboard</a></li>
-                        <li><a href="/student/complaints">&rarr; Complaints</a></li>
+                        <li><a href="/student/dashboard">Dashboard</a></li>
+                        <li><a href="/student/complaints">Complaints</a></li>
                     <% } else if (typeof staff !== 'undefined' || (typeof session !== 'undefined' && session.staff)) { %>
-                        <li><a href="/staff/dashboard">&rarr; Dashboard</a></li>
-                        <li><a href="/staff/pending-requests">&rarr; Pending Queue</a></li>
-                        <li><a href="/staff/complaints">&rarr; Complaints</a></li>
+                        <li><a href="/staff/dashboard">Dashboard</a></li>
+                        <li><a href="/staff/pending-requests">Pending Queue</a></li>
+                        <li><a href="/staff/complaints">Complaints</a></li>
                     <% } else { %>
-                        <li><a href="/">&rarr; Student Login</a></li>
-                        <li><a href="/staff/login">&rarr; Staff Login</a></li>
+                        <li><a href="/">Student Login</a></li>
+                        <li><a href="/staff/login">Staff Login</a></li>
                     <% } %>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Support & Contact</h4>
-                <ul class="footer-contact">
-                    <li>
-                        <span class="footer-contact-icon">&#9993;</span>
-                        <span>support@futb.edu.ng</span>
-                    </li>
-                    <li>
-                        <span class="footer-contact-icon">&#128338;</span>
-                        <span>Mon - Fri (8:00 AM - 4:00 PM)</span>
-                    </li>
-                    <li>
-                        <span class="footer-contact-icon">&#128205;</span>
-                        <span>Bursary Department, FUTB Main Campus, Jigawa State, Nigeria</span>
-                    </li>
                 </ul>
             </div>
         </div>
