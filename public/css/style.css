@@ -795,7 +795,7 @@ tbody tr:hover { background: #f8fafc; }
 /* ============================================================
    MISCELLANEOUS COMPONENTS
    ============================================================ */
-.info-item {}
+/*.info-item {} */
 .info-label {
     font-size: 11px;
     font-weight: 600;
@@ -1069,4 +1069,135 @@ td.reason-col { color: #6b7280; font-size: 12.5px; max-width: 240px; }
 
 @media (max-width: 600px) {
     .form-row { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   VISIBLE SITE FOOTER
+   ============================================================ */
+.site-footer {
+    background-color: var(--primary);
+    color: #cbd5e1;
+    font-size: 13px;
+    padding: 48px 0 24px 0;
+    margin-top: 64px;
+    border-top: 4px solid var(--accent);
+}
+
+.footer-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.5fr;
+    gap: 40px;
+}
+
+.footer-col h4 {
+    color: var(--white);
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    position: relative;
+    padding-bottom: 8px;
+}
+
+.footer-col h4::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 28px;
+    height: 2.5px;
+    background-color: var(--accent);
+    border-radius: 2px;
+}
+
+.footer-col p {
+    line-height: 1.6;
+    margin-bottom: 12px;
+    color: #94a3b8;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 10px;
+}
+
+.footer-links a {
+    color: #94a3b8;
+    text-decoration: none;
+    transition: color 0.2s, transform 0.2s;
+    display: inline-block;
+}
+
+.footer-links a:hover {
+    color: var(--white);
+    transform: translateX(4px);
+}
+
+.footer-contact {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-contact li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+    line-height: 1.5;
+    color: #94a3b8;
+}
+
+.footer-contact-icon {
+    color: var(--white);
+    font-weight: bold;
+    opacity: 0.9;
+}
+
+.footer-divider {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin: 32px 0 20px 0;
+}
+
+.footer-bottom {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.footer-bottom-text {
+    opacity: 0.95;
+}
+
+/* Responsive adjustments for footer */
+@media (max-width: 768px) {
+    .footer-container {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
+    .site-footer {
+        padding: 36px 0 20px 0;
+        margin-top: 48px;
+    }
+    .footer-bottom {
+        flex-direction: column;
+        text-align: center;
+    }
 }
