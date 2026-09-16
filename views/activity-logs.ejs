@@ -1,0 +1,110 @@
+<%- include('partials/header', { title: 'NELFUND — System Activity Logs' }) %>
+
+<div class="app-wrapper" id="appWrapper">
+    <%- include('partials/sidebar-staff', { staff, activePage: 'activity-logs' }) %>
+
+    <main class="app-main">
+        <%- include('partials/topbar-staff', { staff, pageTitle: 'System Activity Logs' }) %>
+
+        <div class="app-content">
+            <div style="margin-bottom: 24px;">
+                <h1 class="page-heading" style="margin-bottom: 4px; border: none; padding: 0;">Security &amp; Operational Activity Logs</h1>
+                <p style="color: #64748b; font-size: 14px;">
+                    Audit trail recording all staff and student actions — logins, refund submissions, NELFUND uploads, approvals, rejections, and administrative changes.
+                </p>
+            </div>
+
+            <!-- Legend / Summary pills -->
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px;">
+                <span style="display:inline-flex; align-items:center; gap:6px; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; padding:5px 12px; border-radius:20px; font-size:12.5px; font-weight:600;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0"/></svg>
+                    STAFF actions
+                </span>
+                <span style="display:inline-flex; align-items:center; gap:6px; background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; padding:5px 12px; border-radius:20px; font-size:12.5px; font-weight:600;">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5"/></svg>
+                    STUDENT actions
+                </span>
+                <span style="margin-left:auto; font-size:12.5px; color:#64748b; align-self:center;">
+                    Showing latest <%= logs.length %> entries
+                </span>
+            </div>
+
+            <div style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px;">
+                        <thead>
+                            <tr style="background: #152c5b; color: white;">
+                                <th style="padding: 14px 16px;">#</th>
+                                <th style="padding: 14px 16px;">Timestamp</th>
+                                <th style="padding: 14px 16px;">Actor</th>
+                                <th style="padding: 14px 16px;">Type</th>
+                                <th style="padding: 14px 16px;">Action</th>
+                                <th style="padding: 14px 16px;">Event Details</th>
+                                <th style="padding: 14px 16px;">IP Address</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (logs.length === 0) { %>
+                                <tr>
+                                    <td colspan="7" style="text-align: center; padding: 40px; color: #94a3b8;">
+                                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#cbd5e1" stroke-width="1.5" style="display:block; margin: 0 auto 12px;"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>
+                                        No activity logs recorded yet. Activity will appear here as staff and students interact with the portal.
+                                    </td>
+                                </tr>
+                            <% } else { %>
+                                <% logs.forEach(function(log, index) {
+                                    const isStudent = log.actor_type === 'student';
+                                    const rowBg = index % 2 === 0 ? '#ffffff' : '#f8fafc';
+
+                                    // Colour-code action badges
+                                    let badgeBg = '#e2e8f0', badgeColor = '#0f172a';
+                                    const act = (log.action || '').toUpperCase();
+                                    if (act.includes('LOGIN') && !act.includes('FAILED')) { badgeBg='#dcfce7'; badgeColor='#15803d'; }
+                                    else if (act.includes('FAILED') || act.includes('REJECT')) { badgeBg='#fee2e2'; badgeColor='#b91c1c'; }
+                                    else if (act.includes('APPROVE') || act.includes('SUBMIT')) { badgeBg='#dbeafe'; badgeColor='#1d4ed8'; }
+                                    else if (act.includes('LOGOUT')) { badgeBg='#fef3c7'; badgeColor='#92400e'; }
+                                    else if (act.includes('UPLOAD') || act.includes('GENERATE') || act.includes('REGISTER')) { badgeBg='#f3e8ff'; badgeColor='#6d28d9'; }
+                                    else if (act.includes('COMPLAINT')) { badgeBg='#ffedd5'; badgeColor='#9a3412'; }
+                                %>
+                                <tr style="border-bottom: 1px solid #e2e8f0; background: <%= rowBg %>;">
+                                    <td style="padding: 12px 16px; color: #94a3b8; font-size: 12px;"><%= index + 1 %></td>
+                                    <td style="padding: 12px 16px; color: #475569; font-size: 12.5px; white-space: nowrap;">
+                                        <%= new Date(log.created_at).toLocaleString('en-NG', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' }) %>
+                                    </td>
+                                    <td style="padding: 12px 16px;">
+                                        <% if (isStudent) { %>
+                                            <div style="font-weight: 600; color: #0f172a; font-size: 13px;"><%= log.student_name || log.reg_number %></div>
+                                            <div style="font-size: 11.5px; color: #64748b; margin-top: 2px; font-family: monospace;"><%= log.reg_number %></div>
+                                        <% } else { %>
+                                            <div style="font-weight: 600; color: #0f172a; font-size: 13px;"><%= log.full_name || 'System' %></div>
+                                            <% if (log.username) { %>
+                                                <div style="font-size: 11.5px; color: #64748b; margin-top: 2px;">@<%= log.username %></div>
+                                            <% } %>
+                                        <% } %>
+                                    </td>
+                                    <td style="padding: 12px 16px;">
+                                        <% if (isStudent) { %>
+                                            <span style="display:inline-block; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:700; background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0;">STUDENT</span>
+                                        <% } else { %>
+                                            <span style="display:inline-block; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:700; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe;"><%= (log.role || 'STAFF').toUpperCase() %></span>
+                                        <% } %>
+                                    </td>
+                                    <td style="padding: 12px 16px;">
+                                        <span style="display:inline-block; padding:3px 8px; border-radius:4px; font-size:11px; font-weight:700; font-family:monospace; text-transform:uppercase; background:<%= badgeBg %>; color:<%= badgeColor %>;">
+                                            <%= log.action %>
+                                        </span>
+                                    </td>
+                                    <td style="padding: 12px 16px; color: #334155; line-height: 1.5; font-size: 13px;"><%= log.details %></td>
+                                    <td style="padding: 12px 16px; color: #64748b; font-family: monospace; font-size: 12px;"><%= log.ip_address || '127.0.0.1' %></td>
+                                </tr>
+                                <% }); %>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <%- include('partials/footer') %>
+    </main>
+</div>

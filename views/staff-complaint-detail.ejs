@@ -1,81 +1,71 @@
-<%- include('partials/header', { title: 'NELFUND — Complaint Detail' }) %>
+<%- include('partials/header', { title: 'NELFUND — Complaint Response' }) %>
 
-    <%- include('partials/navbar-staff', { staff, activePage: 'complaints' }) %>
+<div class="app-wrapper" id="appWrapper">
+    <%- include('partials/sidebar-staff', { staff, activePage: 'complaints' }) %>
 
-    <div class="container container-sm">
-        <a href="/staff/complaints" class="btn-back">&larr; Back to Complaints</a>
-        <h1 class="page-heading">Reply to Complaint</h1>
+    <main class="app-main">
+        <%- include('partials/topbar-staff', { staff, pageTitle: 'Reply to Complaint' }) %>
 
-
-
-        <!-- Complaint Details -->
-        <div class="card-padded" style="margin-bottom:22px;">
-            <div class="card-header" style="margin: -24px -24px 20px; border-radius:10px 10px 0 0;">Complaint Details</div>
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="info-label">Student</div>
-                    <div class="info-value"><%= complaint.full_name %></div>
+        <div class="app-content">
+            <div style="max-width: 760px; margin: 0 auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                    <a href="/staff/complaints" class="btn" style="background: #f1f5f9; color: #475569; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600;">
+                        &larr; Back to Complaints List
+                    </a>
                 </div>
-                <div class="info-item">
-                    <div class="info-label">Reg. Number</div>
-                    <div class="info-value"><%= complaint.reg_number %></div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Date Submitted</div>
-                    <div class="info-value"><%= new Date(complaint.created_at).toLocaleString() %></div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Status</div>
-                    <div class="info-value" style="margin-top:4px;">
-                        <span class="badge badge-<%= complaint.status %>">
-                            <%= complaint.status.toUpperCase() %>
+
+                <!-- Complaint Details -->
+                <div style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 28px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                        <div>
+                            <h2 style="font-size: 19px; font-weight: 700; color: #152c5b; margin-bottom: 4px;"><%= complaint.subject %></h2>
+                            <div style="font-size: 13.5px; color: #64748b;">
+                                Submitted by: <strong style="color: #0f172a;"><%= complaint.full_name %></strong> (<%= complaint.reg_number %>)
+                            </div>
+                        </div>
+                        <span style="display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; background: <%= complaint.status === 'answered' ? '#dcfce7' : '#fef3c7' %>; color: <%= complaint.status === 'answered' ? '#166534' : '#b45309' %>;">
+                            <%= complaint.status %>
                         </span>
                     </div>
-                </div>
-            </div>
 
-            <hr class="divider">
-
-            <div style="margin-bottom:12px;">
-                <div class="info-label">Subject</div>
-                <div class="info-value" style="font-size:16px; font-weight:700; color:#152c5b; margin-top:4px;">
-                    <%= complaint.subject %>
-                </div>
-            </div>
-
-            <div>
-                <div class="info-label">Message</div>
-                <div style="font-size:14px; color:#333; line-height:1.7; margin-top:6px; background:#f8fafc; border-radius:8px; padding:14px 16px; border:1px solid #e2e8f0;">
-                    <%= complaint.message %>
-                </div>
-            </div>
-
-            <% if (complaint.status === 'answered') { %>
-                <hr class="divider">
-                <div class="reply-box">
-                    <div class="reply-label">Your Reply</div>
-                    <%= complaint.reply %>
-                    <div class="reply-date">
-                        Replied: <%= new Date(complaint.replied_at).toLocaleString() %>
+                    <div style="font-size: 12px; color: #94a3b8; margin-bottom: 16px;">
+                        Timestamp: <%= new Date(complaint.created_at).toLocaleString('en-NG') %>
                     </div>
+
+                    <div style="font-size: 14.5px; color: #334155; line-height: 1.6; background: #f8fafc; padding: 18px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 20px;">
+                        <%= complaint.message %>
+                    </div>
+
+                    <% if (complaint.status === 'answered') { %>
+                        <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 18px; border-radius: 8px;">
+                            <div style="font-size: 12px; font-weight: 700; color: #1e40af; text-transform: uppercase; margin-bottom: 6px;">Staff Response</div>
+                            <div style="font-size: 14.5px; color: #1e293b; line-height: 1.6;"><%= complaint.reply %></div>
+                            <div style="font-size: 12px; color: #64748b; margin-top: 10px;">
+                                Replied by: <%= complaint.staff_name || 'Staff' %> on <%= new Date(complaint.replied_at).toLocaleString('en-NG') %>
+                            </div>
+                        </div>
+                    <% } %>
                 </div>
-            <% } %>
+
+                <!-- Reply Form -->
+                <% if (complaint.status !== 'answered') { %>
+                    <div style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 28px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+                        <h3 style="font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 16px;">Write Official Response</h3>
+                        
+                        <form action="/staff/complaints/<%= complaint.complaint_id %>/reply" method="POST">
+                            <div class="form-group" style="margin-bottom: 20px;">
+                                <label for="reply" style="display:block; font-weight:600; font-size:13.5px; color:#1e293b; margin-bottom:6px;">Your Response <span style="color:#e11d48">*</span></label>
+                                <textarea id="reply" name="reply" required rows="5" placeholder="Type your official response to the student..." style="width:100%; padding:12px; border-radius:8px; border:1px solid #cbd5e1; font-size:14px; font-family:inherit;"></textarea>
+                            </div>
+                            <button type="submit" class="btn" style="background:#152c5b; color:white; padding:12px 24px; border-radius:8px; font-size:14px; font-weight:700; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:8px;">
+                                Send Official Reply
+                            </button>
+                        </form>
+                    </div>
+                <% } %>
+            </div>
         </div>
 
-        <!-- Reply Form (only if pending) -->
-        <% if (complaint.status !== 'answered') { %>
-        <div class="card-padded">
-            <div class="card-header" style="margin: -24px -24px 20px; border-radius:10px 10px 0 0;">Write Reply</div>
-            <form action="/staff/complaints/<%= complaint.complaint_id %>/reply" method="POST">
-                <div class="form-group">
-                    <label for="reply">Your Response <span style="color:#c0392b">*</span></label>
-                    <textarea id="reply" name="reply" required rows="5"
-                        placeholder="Type your reply here..."></textarea>
-                </div>
-                <button type="submit" class="btn-submit">&#10003; Send Reply</button>
-            </form>
-        </div>
-        <% } %>
-    </div>
-
-<%- include('partials/footer') %>
+        <%- include('partials/footer') %>
+    </main>
+</div>

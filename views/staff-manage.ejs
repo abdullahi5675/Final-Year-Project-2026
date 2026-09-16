@@ -1,0 +1,139 @@
+<%- include('partials/header', { title: 'NELFUND — Manage Staff Accounts' }) %>
+
+<div class="app-wrapper" id="appWrapper">
+    <%- include('partials/sidebar-staff', { staff, activePage: 'manage-staff' }) %>
+
+    <main class="app-main">
+        <%- include('partials/topbar-staff', { staff, pageTitle: 'Staff Directory' }) %>
+
+        <div class="app-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+                <div>
+                    <h1 class="page-heading" style="margin-bottom: 4px; border: none; padding: 0;">Staff Directory & Management</h1>
+                    <p style="color: #64748b; font-size: 14px;">Manage system access, toggle account status, and perform administrative password resets.</p>
+                </div>
+                <a href="/staff/register" class="btn" style="background:#152c5b; color:white; padding:10px 18px; border-radius:8px; font-weight:600; text-decoration:none; font-size:13.5px; display:inline-flex; align-items:center; gap:6px;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                    Register New Staff
+                </a>
+            </div>
+
+            <div style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px;">
+                        <thead>
+                            <tr style="background: #152c5b; color: white;">
+                                <th style="padding: 14px 16px;">S/N</th>
+                                <th style="padding: 14px 16px;">Full Name</th>
+                                <th style="padding: 14px 16px;">Username</th>
+                                <th style="padding: 14px 16px;">Email</th>
+                                <th style="padding: 14px 16px;">Role</th>
+                                <th style="padding: 14px 16px;">Status</th>
+                                <th style="padding: 14px 16px;">Last Login</th>
+                                <th style="padding: 14px 16px; text-align: center;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (staffMembers.length === 0) { %>
+                                <tr>
+                                    <td colspan="8" style="text-align: center; padding: 30px; color: #94a3b8;">No staff members found.</td>
+                                </tr>
+                            <% } else { %>
+                                <% staffMembers.forEach(function(member, index) { %>
+                                    <tr style="border-bottom: 1px solid #e2e8f0; background: <%= index % 2 === 0 ? '#ffffff' : '#f8fafc' %>;">
+                                        <td style="padding: 14px 16px;"><%= index + 1 %></td>
+                                        <td style="padding: 14px 16px; font-weight: 600; color: #0f172a;"><%= member.full_name %></td>
+                                        <td style="padding: 14px 16px; color: #334155; font-family: monospace;"><%= member.username %></td>
+                                        <td style="padding: 14px 16px; color: #64748b;"><%= member.email || 'N/A' %></td>
+                                        <td style="padding: 14px 16px;">
+                                            <span style="display:inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11.5px; font-weight: 700; text-transform: uppercase; background: <%= member.role === 'admin' ? '#dbeafe' : '#f1f5f9' %>; color: <%= member.role === 'admin' ? '#1e40af' : '#475569' %>;">
+                                                <%= member.role %>
+                                            </span>
+                                        </td>
+                                        <td style="padding: 14px 16px;">
+                                            <span style="display:inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11.5px; font-weight: 700; background: <%= member.is_active ? '#dcfce7' : '#fee2e2' %>; color: <%= member.is_active ? '#166534' : '#991b1b' %>;">
+                                                <%= member.is_active ? 'Active' : 'Disabled' %>
+                                            </span>
+                                        </td>
+                                        <td style="padding: 14px 16px; color: #64748b; font-size: 12.5px; white-space: nowrap;">
+                                            <%= member.last_login ? new Date(member.last_login).toLocaleString('en-NG') : 'Never' %>
+                                        </td>
+                                        <td style="padding: 14px 16px; text-align: center;">
+                                            <div style="display: flex; gap: 8px; justify-content: center;">
+                                                <form method="POST" action="/staff/toggle-status/<%= member.staff_id %>" style="display:inline;">
+                                                    <button type="submit" style="padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 6px; border: 1px solid #cbd5e1; background: white; cursor: pointer;"
+                                                        onclick="return confirm('Toggle active status for <%= member.username %>?')">
+                                                        <%= member.is_active ? 'Disable' : 'Enable' %>
+                                                    </button>
+                                                </form>
+                                                <button type="button" onclick="openResetModal('<%= member.staff_id %>', '<%= member.username %>')"
+                                                    style="padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 6px; border: none; background: #ea580c; color: white; cursor: pointer;">
+                                                    Reset Password
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Password Reset Modal -->
+        <div id="resetModal" class="modal">
+            <div class="modal-box">
+                <div class="modal-title">
+                    <span>Reset Staff Password</span>
+                    <span class="modal-close" onclick="closeResetModal()">&times;</span>
+                </div>
+                <form id="resetForm" method="POST" action="">
+                    <p style="font-size: 14px; color: #475569; margin-bottom: 16px;">
+                        Resetting password for staff account: <strong id="resetTargetUsername" style="color:#0f172a;"></strong>
+                    </p>
+                    <div class="form-group" style="margin-bottom: 20px;">
+                        <label class="modal-label" for="new_password">New Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" name="new_password" id="new_password" required minlength="6"
+                                placeholder="Enter new password (min 6 chars)" style="width: 100%; padding: 10px 14px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px;">
+                            <button type="button" class="btn-eye-toggle" onclick="togglePasswordVisibility('new_password', this)" aria-label="Toggle password visibility">
+                                <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%; padding: 12px; font-size: 14px; font-weight: 700; background: #152c5b; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                        Update Password
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <script>
+            function togglePasswordVisibility(inputId, btn) {
+                const input = document.getElementById(inputId);
+                if (!input) return;
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    btn.innerHTML = `<svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>`;
+                } else {
+                    input.type = 'password';
+                    btn.innerHTML = `<svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`;
+                }
+            }
+
+            function openResetModal(staffId, username) {
+                document.getElementById('resetTargetUsername').innerText = username;
+                document.getElementById('resetForm').action = '/staff/reset-password/' + staffId;
+                document.getElementById('resetModal').classList.add('active');
+            }
+
+            function closeResetModal() {
+                document.getElementById('resetModal').classList.remove('active');
+                document.getElementById('new_password').value = '';
+            }
+        </script>
+
+        <%- include('partials/footer') %>
+    </main>
+</div>

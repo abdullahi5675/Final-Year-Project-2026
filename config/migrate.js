@@ -166,11 +166,37 @@ async function migrate() {
             );
         `);
 
-        // ── 10. INDEXES (safe — ignored if already exist) ─────────────────────
+        // ── 10. ACTIVITY LOGS ───────────────────────────────────────────────────
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS activity_logs (
+                log_id       SERIAL PRIMARY KEY,
+                staff_id     INT REFERENCES staff(staff_id) ON DELETE SET NULL,
+                reg_number   VARCHAR(50)  NULL,
+                actor_type   VARCHAR(10)  DEFAULT 'staff',
+                student_name VARCHAR(100) NULL,
+                action       VARCHAR(100) NOT NULL,
+                details      TEXT,
+                ip_address   VARCHAR(45),
+                created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // ── 10b. Safely upgrade existing activity_logs tables (existing installs) ─
+        for (const stmt of [
+            `ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS reg_number   VARCHAR(50)  NULL`,
+            `ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS actor_type   VARCHAR(10)  DEFAULT 'staff'`,
+            `ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS student_name VARCHAR(100) NULL`
+        ]) {
+            try { await client.query(stmt); } catch (_) { /* column already exists */ }
+        }
+
+        // ── 11. INDEXES (safe — ignored if already exist) ─────────────────────
         await client.query(`
             CREATE INDEX IF NOT EXISTS idx_student_list     ON students(list_id);
             CREATE INDEX IF NOT EXISTS idx_request_status   ON refund_requests(status);
             CREATE INDEX IF NOT EXISTS idx_request_reg      ON refund_requests(reg_number);
+            CREATE INDEX IF NOT EXISTS idx_activity_staff   ON activity_logs(staff_id);
+            CREATE INDEX IF NOT EXISTS idx_activity_student ON activity_logs(reg_number);
         `);
 
         await client.query('COMMIT');
@@ -226,3 +252,15 @@ async function migrate() {
 }
 
 module.exports = migrate;
+
+if (require.main === module) {
+    migrate()
+        .then(() => {
+            console.log('✓ Migration finished successfully.');
+            process.exit(0);
+        })
+        .catch((err) => {
+            console.error('✗ Migration error:', err.message);
+            process.exit(1);
+        });
+}

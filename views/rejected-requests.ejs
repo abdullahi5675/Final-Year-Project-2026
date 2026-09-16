@@ -1,92 +1,82 @@
 <%- include('partials/header', { title: 'FUTB NELFUND — Rejected Requests' }) %>
 
-    <%- include('partials/navbar-staff', { staff, activePage: 'rejected' }) %>
+<div class="app-wrapper" id="appWrapper">
+    <%- include('partials/sidebar-staff', { staff, activePage: 'rejected' }) %>
 
-    <div class="container container-xl">
-        <div class="page-header">
-            <div>
-                <h1 class="page-heading" style="margin-bottom:4px; border-bottom:none;">Rejected Requests</h1>
-                <div class="page-sub">All refund requests that have been rejected by staff</div>
-            </div>
-            <% if (requests.length > 0) { %>
-                <a href="/staff/rejected-requests/export" class="btn-export">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                    Export to Excel
-                </a>
-            <% } %>
-        </div>
+    <main class="app-main">
+        <%- include('partials/topbar-staff', { staff, pageTitle: 'Rejected Requests' }) %>
 
-        <% if (requests.length > 0) { %>
-        <div class="summary-bar">
-            <span class="summary-icon">&#128683;</span>
-            <span class="summary-count"><%= requests.length %></span>
-            <span class="summary-text">rejected refund request<%= requests.length !== 1 ? 's' : '' %> on record</span>
-        </div>
-        <% } %>
-
-        <div class="card">
-            <div class="card-header-flex">
-                Rejected Refund Requests
-                <span class="record-count"><%= requests.length %> record<%= requests.length !== 1 ? 's' : '' %></span>
-            </div>
-
-            <% if (requests.length === 0) { %>
-                <div class="empty-state">
-                    <div class="empty-icon">&#9989;</div>
-                    <h3>No Rejected Requests</h3>
-                    <p>There are currently no rejected refund requests in the system.</p>
+        <div class="app-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+                <div>
+                    <h1 class="page-heading" style="margin-bottom: 4px; border: none; padding: 0;">Rejected Refund Requests</h1>
+                    <p style="color: #64748b; font-size: 14px;">Audit list of all student refund applications that have been rejected upon verification.</p>
                 </div>
-            <% } else { %>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Reg Number</th>
-                            <th>Full Name</th>
-                            <th>Department / Level</th>
-                            <th>Payment Type</th>
-                            <th>Amount (&#8358;)</th>
-                            <th>Rejection Reason</th>
-                            <th>Rejected By</th>
-                            <th>Date Rejected</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% requests.forEach(function(r, index) { %>
-                        <tr>
-                            <td class="sn-col"><%= index + 1 %></td>
-                            <td class="reg-col"><%= r.reg_number %></td>
-                            <td class="name-col"><%= r.full_name %></td>
-                            <td>
-                                <div style="font-size:13px; font-weight:500;"><%= r.department %></div>
-                                <div style="font-size:11.5px; color:#9ca3af; margin-top:2px;">Level <%= r.level %></div>
-                            </td>
-                            <td>
-                                <span class="badge-payment">
-                                    <% if (r.payment_type === 'first_installment') { %>1st Installment<% } else if (r.payment_type === 'second_installment') { %>2nd Installment<% } else { %>Full Payment<% } %>
-                                </span>
-                            </td>
-                            <td style="font-weight:600; white-space:nowrap;">
-                                <% if (r.refund_amount) { %>&#8358;<%= parseFloat(r.refund_amount).toLocaleString('en-NG', {minimumFractionDigits:2}) %><% } else { %><span style="color:#9ca3af;">&#8212;</span><% } %>
-                            </td>
-                            <td class="reason-col"><%= r.rejection_reason || '&#8212;' %></td>
-                            <td>
-                                <div class="rejected-by">
-                                    <strong><%= r.rejected_by_name || 'N/A' %></strong>
-                                    Staff
-                                </div>
-                            </td>
-                            <td class="date-cell">
-                                <% if (r.verified_at) { %><%= new Date(r.verified_at).toLocaleDateString('en-NG', {day:'2-digit', month:'short', year:'numeric'}) %><br><span style="color:#9ca3af;"><%= new Date(r.verified_at).toLocaleTimeString('en-NG', {hour:'2-digit', minute:'2-digit'}) %></span><% } else { %><span style="color:#9ca3af;">&#8212;</span><% } %>
-                            </td>
-                        </tr>
-                        <% }) %>
-                    </tbody>
-                </table>
+                <% if (requests.length > 0) { %>
+                    <a href="/staff/rejected-requests/export" class="btn" style="background: #152c5b; color: white; padding: 10px 20px; border-radius: 8px; font-weight: 600; font-size: 13.5px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                        Export Excel Report
+                    </a>
+                <% } %>
             </div>
-            <% } %>
-        </div>
-    </div>
 
-<%- include('partials/footer') %>
+            <div style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+                <% if (requests.length === 0) { %>
+                    <div style="text-align: center; padding: 60px 40px; color: #64748b;">
+                        <div style="display:inline-flex; width:56px; height:56px; background:#f0fdf4; border-radius:50%; align-items:center; justify-content:center; margin-bottom:16px; color:#16a34a;">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        </div>
+                        <h3 style="font-size: 18px; color: #0f172a; margin-bottom: 8px; font-weight: 700;">No Rejected Requests</h3>
+                        <p style="font-size: 14px; margin: 0;">There are currently no rejected refund requests in the system.</p>
+                    </div>
+                <% } else { %>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 13.5px;">
+                            <thead>
+                                <tr style="background: #152c5b; color: white;">
+                                    <th style="padding: 14px 16px;">S/N</th>
+                                    <th style="padding: 14px 16px;">Reg Number</th>
+                                    <th style="padding: 14px 16px;">Full Name</th>
+                                    <th style="padding: 14px 16px;">Department / Level</th>
+                                    <th style="padding: 14px 16px;">Payment Type</th>
+                                    <th style="padding: 14px 16px;">Amount (₦)</th>
+                                    <th style="padding: 14px 16px;">Rejection Reason</th>
+                                    <th style="padding: 14px 16px;">Rejected By</th>
+                                    <th style="padding: 14px 16px;">Date Rejected</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% requests.forEach(function(r, index) { %>
+                                    <tr style="border-bottom: 1px solid #e2e8f0; background: <%= index % 2 === 0 ? '#ffffff' : '#f8fafc' %>;">
+                                        <td style="padding: 12px 16px;"><%= index + 1 %></td>
+                                        <td style="padding: 12px 16px; font-weight: 600; color: #0f172a; font-family: monospace;"><%= r.reg_number %></td>
+                                        <td style="padding: 12px 16px; font-weight: 600; color: #0f172a;"><%= r.full_name %></td>
+                                        <td style="padding: 12px 16px;">
+                                            <div style="font-weight: 500; color: #334155;"><%= r.department %></div>
+                                            <div style="font-size: 12px; color: #64748b;">Level <%= r.level %></div>
+                                        </td>
+                                        <td style="padding: 12px 16px;">
+                                            <span style="display:inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11.5px; font-weight: 600; background: #f1f5f9; color: #334155;">
+                                                <%= r.payment_type.replace(/_/g, ' ') %>
+                                            </span>
+                                        </td>
+                                        <td style="padding: 12px 16px; font-weight: 700; color: #dc2626;">
+                                            ₦<%= parseFloat(r.refund_amount || 0).toLocaleString('en-NG', {minimumFractionDigits:2}) %>
+                                        </td>
+                                        <td style="padding: 12px 16px; color: #991b1b; max-width: 250px; line-height: 1.4;"><%= r.rejection_reason || 'N/A' %></td>
+                                        <td style="padding: 12px 16px; color: #475569;"><%= r.rejected_by_name || 'N/A' %></td>
+                                        <td style="padding: 12px 16px; color: #64748b; font-size: 12.5px; white-space: nowrap;">
+                                            <%= r.verified_at ? new Date(r.verified_at).toLocaleDateString('en-NG', {day:'2-digit', month:'short', year:'numeric'}) : 'N/A' %>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+
+        <%- include('partials/footer') %>
+    </main>
+</div>

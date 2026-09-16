@@ -1,9 +1,11 @@
-<!-- Staff Navbar -->
+<!-- Staff / Admin Navbar -->
 <nav class="navbar">
     <div class="navbar-brand">
         <img src="/FUTBBBBBBB.png" alt="FUTB Logo">
         <div class="navbar-brand-text">
-            <div class="portal-title">NELFUND Staff Portal</div>
+            <div class="portal-title">
+                NELFUND <%= staff.role === 'admin' ? 'Admin' : 'Staff' %> Portal
+            </div>
             <div class="portal-sub">Federal University of Technology, Babura</div>
         </div>
     </div>
@@ -14,11 +16,25 @@
         <span class="bar"></span>
     </button>
     <div class="navbar-right" id="navbarRight">
-        <span class="user-name"><%= staff.full_name %></span>
+        <span class="user-name">
+            <%= staff.full_name %> 
+            <small style="background: rgba(255,255,255,0.2); padding: 2px 6px; border-radius: 4px; font-size: 11px; text-transform: uppercase;">
+                <%= staff.role %>
+            </small>
+        </span>
         <a href="/staff/dashboard"<% if (typeof activePage !== 'undefined' && activePage === 'dashboard') { %> class="active-link"<% } %>>Dashboard</a>
+        <a href="/staff/upload-list"<% if (typeof activePage !== 'undefined' && activePage === 'upload') { %> class="active-link"<% } %>>Upload List</a>
         <a href="/staff/pending-requests"<% if (typeof activePage !== 'undefined' && activePage === 'pending') { %> class="active-link"<% } %>>Pending</a>
         <a href="/staff/rejected-requests"<% if (typeof activePage !== 'undefined' && activePage === 'rejected') { %> class="active-link"<% } %>>Rejected</a>
         <a href="/staff/complaints"<% if (typeof activePage !== 'undefined' && activePage === 'complaints') { %> class="active-link"<% } %>>Complaints</a>
+
+        <% if (staff.role === 'admin') { %>
+            <a href="/staff/register"<% if (typeof activePage !== 'undefined' && activePage === 'register-staff') { %> class="active-link"<% } %>>Register Staff</a>
+            <a href="/staff/manage"<% if (typeof activePage !== 'undefined' && activePage === 'manage-staff') { %> class="active-link"<% } %>>Manage Staff</a>
+            <a href="/staff/activity-logs"<% if (typeof activePage !== 'undefined' && activePage === 'activity-logs') { %> class="active-link"<% } %>>Activity Logs</a>
+        <% } %>
+
+        <a href="/staff/profile"<% if (typeof activePage !== 'undefined' && activePage === 'profile') { %> class="active-link"<% } %>>Profile</a>
         <a href="/staff/logout" class="btn-logout">Logout</a>
     </div>
 </nav>

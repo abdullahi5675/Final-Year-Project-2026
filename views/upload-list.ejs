@@ -1,46 +1,65 @@
 <%- include('partials/header', { title: 'NELFUND — Upload Student List' }) %>
 
-    <%- include('partials/navbar-staff', { staff, activePage: 'dashboard' }) %>
+<div class="app-wrapper" id="appWrapper">
+    <%- include('partials/sidebar-staff', { staff, activePage: 'upload' }) %>
 
-    <div class="container container-sm">
-        <a href="/staff/dashboard" class="btn-back">&larr; Back to Dashboard</a>
-        <h1 class="page-heading">Upload NELFUND Student List</h1>
+    <main class="app-main">
+        <%- include('partials/topbar-staff', { staff, pageTitle: 'Upload NELFUND List' }) %>
 
-        <% if (error) { %><div class="alert alert-danger"><%= error %></div><% } %>
-        <% if (success) { %><div class="alert alert-success"><%= success %></div><% } %>
+        <div class="app-content">
+            <div style="max-width: 720px; margin: 0 auto;">
+                <h1 class="page-heading" style="margin-bottom: 8px; border: none; padding: 0;">Upload NELFUND Approved List</h1>
+                <p style="color: #64748b; font-size: 14px; margin-bottom: 24px;">Upload the approved student CSV/Excel file provided by NELFUND to enable student refund claims.</p>
 
-        <!-- Requirements -->
-        <div class="requirements-box">
-            <strong>&#128196; File Requirements:</strong>
-            <ul>
-                <li>File must be in Excel format (.xlsx or .xls)</li>
-                <li>Required columns: <strong>reg_number, full_name, department, level, nelfund_amount</strong></li>
-                <li>Column names must match exactly (case-insensitive)</li>
-                <li>Maximum file size: <strong>10 MB</strong></li>
-            </ul>
-        </div>
-
-        <div class="form-card">
-            <div class="form-card-header">Select File to Upload</div>
-            <div class="form-card-body">
-                <form action="/staff/upload-list" method="POST" enctype="multipart/form-data">
-                    <div class="form-group">
-                        <label for="batch_reference">Batch Reference <span style="color:#c0392b">*</span></label>
-                        <input type="text" name="batch_reference" id="batch_reference" required
-                            placeholder="e.g. NELFUND-2024-BATCH-01">
-                        <div class="field-hint">Enter a unique reference name for this upload batch</div>
+                <% if (error) { %>
+                    <div class="alert alert-danger" style="background:#fef2f2; color:#991b1b; padding:14px 18px; border-radius:8px; margin-bottom:20px; border:1px solid #fecaca; font-size:14px;">
+                        <strong>Error:</strong> <%= error %>
                     </div>
+                <% } %>
 
-                    <div class="form-group">
-                        <label for="nelfund_file">Excel File (.xlsx / .xls) <span style="color:#c0392b">*</span></label>
-                        <input type="file" name="nelfund_file" id="nelfund_file"
-                            accept=".xlsx,.xls" required>
-                        <div class="field-hint">This will merge with the existing list — previously uploaded students will be preserved.</div>
+                <% if (success) { %>
+                    <div class="alert alert-success" style="background:#f0fdf4; color:#166534; padding:14px 18px; border-radius:8px; margin-bottom:20px; border:1px solid #bbf7d0; font-size:14px;">
+                        <strong>Success:</strong> <%= success %>
                     </div>
-                    <button type="submit" class="btn-submit">&#128228; Upload File</button>
-                </form>
+                <% } %>
+
+                <!-- Requirements Box -->
+                <div style="background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+                    <div style="font-weight: 700; color: #152c5b; font-size: 15px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3h7.5M6 20.25h12A2.25 2.25 0 0020.25 18V6.75A2.25 2.25 0 0018 4.5H6A2.25 2.25 0 003.75 6.75v11.25A2.25 2.25 0 006 20.25z" /></svg>
+                        Excel File Specifications
+                    </div>
+                    <ul style="padding-left: 20px; color: #475569; font-size: 13.5px; line-height: 1.7;">
+                        <li>Supported file formats: Excel workbook (<strong>.xlsx</strong> or <strong>.xls</strong>)</li>
+                        <li>Required column layout: <strong>reg_number</strong> (Col 1), <strong>full_name</strong> (Col 2), <strong>department</strong> (Col 3), <strong>level</strong> (Col 4)</li>
+                        <li>Headers should be placed on row 1 of worksheet 1</li>
+                        <li>Previously uploaded student records will be updated automatically</li>
+                    </ul>
+                </div>
+
+                <!-- Form Card -->
+                <div style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 28px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
+                    <form action="/staff/upload-list" method="POST" enctype="multipart/form-data">
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label for="batch_reference" style="display:block; font-weight:600; font-size:14px; color:#1e293b; margin-bottom:6px;">Batch Reference / File Identifier <span style="color:#e11d48">*</span></label>
+                            <input type="text" name="batch_reference" id="batch_reference" required placeholder="e.g. NELFUND-2024-BATCH-01" style="width:100%; padding:10px 14px; border-radius:6px; border:1px solid #cbd5e1; font-size:14px;">
+                            <div style="font-size: 12px; color: #64748b; margin-top: 4px;">Provide a descriptive reference for tracking this upload batch.</div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 28px;">
+                            <label for="nelfund_file" style="display:block; font-weight:600; font-size:14px; color:#1e293b; margin-bottom:6px;">Select NELFUND Excel File (.xlsx / .xls) <span style="color:#e11d48">*</span></label>
+                            <input type="file" name="nelfund_file" id="nelfund_file" accept=".xlsx,.xls" required style="width:100%; padding:10px; border-radius:6px; border:1px solid #cbd5e1; font-size:14px; background:#f8fafc;">
+                        </div>
+
+                        <button type="submit" class="btn" style="width:100%; padding:12px; font-size:15px; font-weight:700; background:#152c5b; color:white; border:none; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:8px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
+                            Process & Upload List
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
 
-<%- include('partials/footer') %>
+        <%- include('partials/footer') %>
+    </main>
+</div>

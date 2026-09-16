@@ -1,68 +1,15 @@
     <% if (typeof bodyClass === 'undefined' || bodyClass !== 'login-body') { %>
-    <!-- Simple Compact Footer -->
-    <footer class="site-footer">
-        <div class="footer-container">
-            <div class="footer-col">
-                <h4>FUT Babura</h4>
-                <p>NELFUND School Fees Refund Portal for the Federal University of Technology, Babura, Jigawa State.</p>
-            </div>
-            <div class="footer-col">
-                <h4>Quick Links</h4>
-                <ul class="footer-links">
-                    <% if (typeof student !== 'undefined' || (typeof session !== 'undefined' && session.student)) { %>
-                        <li><a href="/student/dashboard">Dashboard</a></li>
-                        <li><a href="/student/complaints">Complaints</a></li>
-                    <% } else if (typeof staff !== 'undefined' || (typeof session !== 'undefined' && session.staff)) { %>
-                        <li><a href="/staff/dashboard">Dashboard</a></li>
-                        <li><a href="/staff/pending-requests">Pending Queue</a></li>
-                        <li><a href="/staff/complaints">Complaints</a></li>
-                    <% } else { %>
-                        <li><a href="/">Student Login</a></li>
-                        <li><a href="/staff/login">Staff Login</a></li>
-                    <% } %>
-                </ul>
-            </div>
+    <!-- Ultra-Sleek Professional Compact Footer -->
+    <footer class="app-footer-compact">
+        <div>
+            &copy; <%= new Date().getFullYear() %> <strong>Federal University of Technology, Babura</strong>. All rights reserved.
         </div>
-        
-        <div class="footer-divider"></div>
-        
-        <div class="footer-bottom">
-            <div class="footer-bottom-text">
-                &copy; <%= new Date().getFullYear() %> Federal University of Technology, Babura. All rights reserved.
-            </div>
-            <div class="footer-bottom-text">
-                Powered by FUTB ICT &amp; Bursary Unit
-            </div>
+        <div style="display: flex; gap: 16px; font-size: 12.5px;">
+            <span>NELFUND Student Refund Portal</span>
+            <span>&bull;</span>
+            <span>Official University Bursary System</span>
         </div>
     </footer>
     <% } %>
-
-    <%- typeof extraScripts !== 'undefined' ? extraScripts : '' %>
-    <script>
-        // Mobile navbar toggle — shared across all pages
-        document.addEventListener('DOMContentLoaded', function () {
-            var toggleBtn = document.getElementById('navbarToggle');
-            var navRight  = document.getElementById('navbarRight');
-
-            if (toggleBtn && navRight) {
-                toggleBtn.addEventListener('click', function (e) {
-                    e.stopPropagation();
-                    toggleBtn.classList.toggle('active');
-                    navRight.classList.toggle('active');
-                });
-
-                document.addEventListener('click', function (e) {
-                    if (
-                        navRight.classList.contains('active') &&
-                        !navRight.contains(e.target) &&
-                        !toggleBtn.contains(e.target)
-                    ) {
-                        toggleBtn.classList.remove('active');
-                        navRight.classList.remove('active');
-                    }
-                });
-            }
-        });
-    </script>
 </body>
 </html>

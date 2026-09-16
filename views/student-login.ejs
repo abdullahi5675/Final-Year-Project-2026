@@ -1,4 +1,4 @@
-<%- include('partials/header', { title: 'NELFUND Refund Portal — Student Login', bodyClass: 'login-body' }) %>
+<%- include('partials/header', { title: 'NELFUND — Student Portal Login', bodyClass: 'login-body' }) %>
 
 <style>
     body.login-body {
@@ -11,40 +11,74 @@
     }
 </style>
 
-    <!-- Dual Logo Header -->
-    <div class="logo-header">
-        <img src="/FUTBBBBBBB.png" alt="FUTB Logo">
-        <div class="logo-header-text">
-            <div class="institution">Federal University of Technology, Babura</div>
-            <div class="portal-name">NELFUND Refund Portal</div>
-        </div>
-        <img src="/Nelfund .webp" alt="NELFUND Logo">
+<!-- Dual Logo Header -->
+<div class="logo-header">
+    <img src="/FUTBBBBBBB.png" alt="FUTB Logo">
+    <div class="logo-header-text">
+        <div class="institution">Federal University of Technology, Babura</div>
+        <div class="portal-name">NELFUND Student Refund Portal</div>
     </div>
+    <img src="/Nelfund .webp" alt="NELFUND Logo">
+</div>
 
-    <!-- Login Card -->
-    <div class="login-card">
-        <div class="card-title">Student Login</div>
-        <div class="card-subtitle">Enter your registration number to access your refund status</div>
+<!-- Login Card -->
+<div class="login-card">
+    <div class="card-title">Student Portal Login</div>
+    <div class="card-subtitle">Enter your Registration/Matriculation Number to check eligibility and submit refund claims</div>
 
-        <% if (error) { %>
-            <div class="alert alert-error"><%= error %></div>
-        <% } %>
+    <% if (error) { %>
+        <div class="alert alert-error"><%= error %></div>
+    <% } %>
 
-        <form method="POST" action="/login">
-            <div class="form-group">
-                <label for="reg_number">Registration Number</label>
-                <input type="text" id="reg_number" name="reg_number" required
-                    placeholder="e.g. FUT/CST/20/00001" autofocus>
+    <form method="POST" action="/login">
+        <div class="form-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                <label for="reg_number" style="margin-bottom: 0;">Registration Number</label>
+                <a href="javascript:void(0)" onclick="openForgotModal()" style="font-size: 12px; color: #2563eb; text-decoration: none; font-weight: 600;">Login Issues?</a>
             </div>
-            <button type="submit" class="btn-submit">Login &rarr;</button>
-        </form>
-
-        <div class="footer-note">
-            Only students on the NELFUND approved list can access this portal.
+            <input type="text" id="reg_number" name="reg_number" required placeholder="e.g. FUTB/CST/22/1001" autofocus>
         </div>
-        <div class="staff-link">
-            <a href="/staff/login">Staff Login &rarr;</a>
+        <button type="submit" class="btn-submit">Login to Student Portal &rarr;</button>
+    </form>
+
+    <div class="footer-note">
+        Only students listed in the official university NELFUND disbursement batch can access this portal.
+    </div>
+    <div class="staff-link" style="display: flex; justify-content: space-between; margin-top: 16px; font-size: 13px;">
+        <a href="/">&larr; Portal Home Page</a>
+        <a href="/staff/login">Staff / Admin Login &rarr;</a>
+    </div>
+</div>
+
+<!-- Student Verification Help Modal -->
+<div id="forgotModal" class="modal">
+    <div class="modal-box">
+        <div class="modal-title">
+            <span>Student Verification Help</span>
+            <span class="modal-close" onclick="closeForgotModal()">&times;</span>
+        </div>
+        <div style="font-size: 14px; color: #334155; line-height: 1.6;">
+            <p style="margin-bottom: 12px;">
+                If your registration number is not being recognized by the portal, please verify that:
+            </p>
+            <ul style="padding-left: 20px; margin-bottom: 16px;">
+                <li>Your name was included in the official approved NELFUND list released by the university.</li>
+                <li>You entered your exact Registration Number without extra spaces.</li>
+            </ul>
+            <p style="color: #64748b; font-size: 13px;">
+                For support, contact the Student Affairs or ICT Helpdesk at <strong style="color:#152c5b;">support@futb.edu.ng</strong> with your full name and matriculation details.
+            </p>
         </div>
     </div>
+</div>
+
+<script>
+    function openForgotModal() {
+        document.getElementById('forgotModal').classList.add('active');
+    }
+    function closeForgotModal() {
+        document.getElementById('forgotModal').classList.remove('active');
+    }
+</script>
 
 <%- include('partials/footer') %>

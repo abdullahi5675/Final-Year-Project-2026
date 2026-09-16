@@ -14,6 +14,14 @@ function requireStaffAuth(req, res, next) {
     res.redirect('/staff/login');
 }
 
+// Middleware to check if staff is admin
+function requireAdminAuth(req, res, next) {
+    if (req.session && req.session.staff && req.session.staff.role === 'admin') {
+        return next();
+    }
+    res.status(403).send('Access Denied: Administrator privileges required.');
+}
+
 // Middleware to redirect if already logged in
 function redirectIfLoggedIn(req, res, next) {
     if (req.session && req.session.student) {
@@ -28,5 +36,6 @@ function redirectIfLoggedIn(req, res, next) {
 module.exports = {
     requireStudentAuth,
     requireStaffAuth,
+    requireAdminAuth,
     redirectIfLoggedIn
 };

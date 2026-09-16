@@ -1,51 +1,66 @@
-<%- include('partials/header', { title: 'NELFUND — Staff Complaints Management' }) %>
+<%- include('partials/header', { title: 'NELFUND — Complaints Management' }) %>
 
-    <%- include('partials/navbar-staff', { staff, activePage: 'complaints' }) %>
+<div class="app-wrapper" id="appWrapper">
+    <%- include('partials/sidebar-staff', { staff, activePage: 'complaints' }) %>
 
-    <div class="container container-md">
-        <h1 class="page-heading">Complaints Management</h1>
+    <main class="app-main">
+        <%- include('partials/topbar-staff', { staff, pageTitle: 'Student Complaints' }) %>
 
-        <% if (complaints.length === 0) { %>
-            <div class="no-requests">
-                <h3>No Complaints</h3>
-                <p>There are currently no complaints from students.</p>
+        <div class="app-content">
+            <div style="margin-bottom: 24px;">
+                <h1 class="page-heading" style="margin-bottom: 4px; border: none; padding: 0;">Student Complaints Management</h1>
+                <p style="color: #64748b; font-size: 14px;">Review and respond to inquiries, issues, and payment complaints submitted by eligible students.</p>
             </div>
-        <% } else { %>
-            <% complaints.forEach(function(complaint) { %>
-                <div class="complaint-item" style="background:#fff; padding:20px; border:1.5px solid #dbeafe; border-radius:10px; margin-bottom:16px; box-shadow:0 2px 8px rgba(21,44,91,0.06);">
-                    <div class="complaint-top">
-                        <div>
-                            <div class="complaint-subject"><%= complaint.subject %></div>
-                            <div style="font-size:12.5px; color:#666; margin-top:4px;">
-                                From: <strong><%= complaint.full_name %></strong> &mdash; <%= complaint.reg_number %>
-                            </div>
-                        </div>
-                        <span class="badge badge-<%= complaint.status %>">
-                            <%= complaint.status.toUpperCase() %>
-                        </span>
-                    </div>
 
-                    <p class="complaint-message"><%= complaint.message %></p>
-                    <div class="complaint-date">
-                        Submitted: <%= new Date(complaint.created_at).toLocaleString() %>
+            <% if (complaints.length === 0) { %>
+                <div style="text-align: center; padding: 60px 40px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; color: #64748b; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+                    <div style="display:inline-flex; width:56px; height:56px; background:#f0fdf4; border-radius:50%; align-items:center; justify-content:center; margin-bottom:16px; color:#16a34a;">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     </div>
-
-                    <% if (complaint.status === 'answered') { %>
-                        <div class="reply-box">
-                            <div class="reply-label">Your Reply</div>
-                            <%= complaint.reply %>
-                            <div class="reply-date">
-                                Replied: <%= new Date(complaint.replied_at).toLocaleString() %>
-                            </div>
-                        </div>
-                    <% } else { %>
-                        <a href="/staff/complaints/<%= complaint.complaint_id %>" class="btn btn-primary" style="margin-top:12px; display:inline-block;">
-                            Reply to Complaint
-                        </a>
-                    <% } %>
+                    <h3 style="font-size: 18px; color: #0f172a; margin-bottom: 8px; font-weight: 700;">No Complaints Found</h3>
+                    <p style="font-size: 14px; margin:0;">There are currently no active student complaints requiring staff review.</p>
                 </div>
-            <% }); %>
-        <% } %>
-    </div>
+            <% } else { %>
+                <% complaints.forEach(function(complaint) { %>
+                    <div style="background: white; padding: 24px; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(15,23,42,0.03);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; flex-wrap: wrap; gap: 12px;">
+                            <div>
+                                <h3 style="font-size: 17px; font-weight: 700; color: #0f172a; margin-bottom: 4px;"><%= complaint.subject %></h3>
+                                <div style="font-size: 13px; color: #64748b;">
+                                    Student: <strong style="color: #1e293b;"><%= complaint.full_name %></strong> (<%= complaint.reg_number %>)
+                                    <% if (complaint.uploader_name) { %> &bull; Uploaded by: <%= complaint.uploader_name %><% } %>
+                                </div>
+                            </div>
+                            <span style="display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; background: <%= complaint.status === 'answered' ? '#dcfce7' : '#fef3c7' %>; color: <%= complaint.status === 'answered' ? '#166534' : '#b45309' %>;">
+                                <%= complaint.status %>
+                            </span>
+                        </div>
 
-<%- include('partials/footer') %>
+                        <p style="font-size: 14.5px; color: #334155; line-height: 1.6; margin-bottom: 14px; background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid #f1f5f9;"><%= complaint.message %></p>
+                        
+                        <div style="font-size: 12px; color: #94a3b8; margin-bottom: 16px;">
+                            Submitted: <%= new Date(complaint.created_at).toLocaleString('en-NG') %>
+                        </div>
+
+                        <% if (complaint.status === 'answered') { %>
+                            <div style="background: #eff6ff; border: 1px solid #bfdbfe; padding: 16px; border-radius: 8px;">
+                                <div style="font-size: 12px; font-weight: 700; color: #1e40af; text-transform: uppercase; margin-bottom: 6px;">Staff Response</div>
+                                <div style="font-size: 14px; color: #1e293b; line-height: 1.5;"><%= complaint.reply %></div>
+                                <div style="font-size: 11.5px; color: #64748b; margin-top: 8px;">
+                                    Replied: <%= new Date(complaint.replied_at).toLocaleString('en-NG') %>
+                                </div>
+                            </div>
+                        <% } else { %>
+                            <a href="/staff/complaints/<%= complaint.complaint_id %>" class="btn" style="background: #152c5b; color: white; padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 8.25h9m-9 3H12m-9.75 1.51c0 1.6 1.123 2.994 2.707 3.227 1.129.166 2.27.293 3.423.379.35.026.67.21.865.501L12 21l2.755-4.133a1.14 1.14 0 01.865-.501 48.172 48.172 0 003.423-.379c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z" /></svg>
+                                Reply to Complaint
+                            </a>
+                        <% } %>
+                    </div>
+                <% }); %>
+            <% } %>
+        </div>
+
+        <%- include('partials/footer') %>
+    </main>
+</div>

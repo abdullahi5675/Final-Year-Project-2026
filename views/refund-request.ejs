@@ -1,354 +1,550 @@
 <%- include('partials/header', { title: 'NELFUND — Submit Refund Request', extraCss: `
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
 <style>
-    /* File upload styling override */
     input[type="file"] { background: #eff6ff; border: 1.5px dashed #1e40af; }
-    /* Inline error banner (JS-controlled) */
-    .alert-error-dynamic { display: none; padding: 13px 16px; border-radius: 8px; margin-bottom: 18px;
-        font-size: 13.5px; line-height: 1.55; background: #fdf2f3; color: #8b1a27; border: 1px solid #f5c6cb; }
+    .alert-error-dynamic {
+        display: none; padding: 13px 16px; border-radius: 8px; margin-bottom: 18px;
+        font-size: 13.5px; line-height: 1.55; background: #fdf2f3;
+        color: #8b1a27; border: 1px solid #f5c6cb;
+    }
+
+    /* ── Searchable Bank Combobox ── */
+    .bank-combo { position: relative; }
+
+    .bank-combo-trigger {
+        display: flex; align-items: center; justify-content: space-between;
+        width: 100%; padding: 10px 14px; font-size: 14px; font-family: inherit;
+        border: 1.5px solid #d1d5db; border-radius: 8px; background: white;
+        cursor: pointer; box-sizing: border-box; color: #374151;
+        transition: border-color .2s, box-shadow .2s; text-align: left;
+        min-height: 44px;
+    }
+    .bank-combo-trigger:focus { outline: none; border-color: #152c5b; box-shadow: 0 0 0 3px rgba(21,44,91,0.1); }
+    .bank-combo-trigger.invalid { border-color: #e53e3e !important; background: #fff5f5; }
+    .bank-combo-trigger.valid   { border-color: #38a169; }
+    .bank-combo-trigger .placeholder { color: #9ca3af; }
+    .bank-combo-trigger .selected-text { color: #111827; font-weight: 500; }
+    .bank-combo-arrow { font-size: 12px; color: #9ca3af; transition: transform .2s; flex-shrink: 0; margin-left: 8px; }
+    .bank-combo.open .bank-combo-arrow { transform: rotate(180deg); }
+
+    .bank-combo-dropdown {
+        display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+        z-index: 1000; background: white; border: 1.5px solid #e2e8f0;
+        border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.13);
+        overflow: hidden; flex-direction: column;
+    }
+    .bank-combo.open .bank-combo-dropdown { display: flex; }
+
+    .bank-search-wrap {
+        padding: 10px; border-bottom: 1px solid #f1f5f9; background: #f8fafc;
+    }
+    .bank-search-input {
+        width: 100%; padding: 9px 12px 9px 36px; border: 1.5px solid #e2e8f0;
+        border-radius: 7px; font-size: 13.5px; outline: none; box-sizing: border-box;
+        background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E") no-repeat 10px center;
+    }
+    .bank-search-input:focus { border-color: #152c5b; }
+
+    .bank-list-wrap { overflow-y: auto; max-height: 220px; }
+    .bank-option {
+        padding: 10px 16px; font-size: 13.5px; cursor: pointer;
+        color: #1e293b; border-bottom: 1px solid #f8fafc; transition: background .12s;
+    }
+    .bank-option:hover, .bank-option.kb-focus { background: #eff6ff; color: #152c5b; }
+    .bank-option.is-selected { background: #152c5b; color: #fff; font-weight: 600; }
+    .bank-empty { padding: 18px; text-align: center; color: #94a3b8; font-size: 13px; }
+
+    .bank-clear-btn {
+        display: none; position: absolute; right: 36px; top: 50%;
+        transform: translateY(-50%); cursor: pointer; color: #9ca3af;
+        font-size: 16px; line-height: 1; padding: 2px 4px;
+        transition: color .15s;
+    }
+    .bank-clear-btn:hover { color: #e53e3e; }
+    .bank-clear-btn.visible { display: block; }
 </style>
 ` }) %>
 
-    <%- include('partials/navbar-student', { student, activePage: '' }) %>
+<%- include('partials/navbar-student', { student, activePage: '' }) %>
 
-    <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">Submitting Your Request…</div>
-        <div class="loading-sub">Please wait, do not close this page.</div>
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Submitting Your Request…</div>
+    <div class="loading-sub">Please wait, do not close this page.</div>
+</div>
+
+<div class="container container-sm">
+    <h1 class="page-heading">Submit Refund Request</h1>
+
+    <div class="alert alert-info">
+        <strong>Important Notice:</strong> Once submitted, this form is locked and cannot be edited.
+        Please verify all details carefully before proceeding.
     </div>
 
-    <div class="container container-sm">
-        <h1 class="page-heading">Submit Refund Request</h1>
+    <div class="alert-error-dynamic" id="dynamicError"></div>
 
-        <div class="alert alert-info">
-            <strong>Important Notice:</strong> Once submitted, this form is locked and cannot be edited.
-            Please verify all details carefully before proceeding.
-        </div>
+    <% if (error) { %>
+        <div class="alert alert-error"><%= error %></div>
+    <% } %>
 
-        <!-- Dynamic error shown by JS after failed AJAX submit -->
-        <div class="alert-error-dynamic" id="dynamicError"></div>
+    <form method="POST" action="/student/refund-request" enctype="multipart/form-data" id="refundForm">
 
-        <% if (error) { %>
-            <div class="alert alert-error"><%= error %></div>
-        <% } %>
+        <!-- Section 1: Payment Details -->
+        <div class="form-card">
+            <div class="form-section-header">Section 1 — Payment Details</div>
+            <div class="form-section-body">
 
-        <form method="POST" action="/student/refund-request" enctype="multipart/form-data" id="refundForm">
-
-            <!-- Section 1: Payment Details -->
-            <div class="form-card">
-                <div class="form-section-header">Section 1 — Payment Details</div>
-                <div class="form-section-body">
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="payment_type">Payment Type <span style="color:#c0392b">*</span></label>
-                            <select name="payment_type" id="payment_type" required>
-                                <option value="">— Select Payment Type —</option>
-                                <option value="first_installment">First Installment</option>
-                                <option value="second_installment">Second Installment</option>
-                                <option value="full_payment">Full Payment</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="amount_paid">Amount Paid (₦) <span style="color:#c0392b">*</span></label>
-                            <input type="number" name="amount_paid" id="amount_paid" step="0.01" required
-                                placeholder="Enter the amount you paid">
-                        </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="payment_type">Payment Type <span style="color:#c0392b">*</span></label>
+                        <select name="payment_type" id="payment_type" required>
+                            <option value="">— Select Payment Type —</option>
+                            <option value="first_installment">First Installment</option>
+                            <option value="second_installment">Second Installment</option>
+                            <option value="full_payment">Full Payment</option>
+                        </select>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="remita_number">Remita RRR Number <span style="color:#c0392b">*</span></label>
-                            <input type="text" name="remita_number" id="remita_number"
-                                placeholder="e.g. 191397281991"
-                                maxlength="12" minlength="12"
-                                inputmode="numeric"
-                                pattern="[0-9]{12}"
-                                autocomplete="off"
-                                required>
-                            <div class="field-hint">Enter your 12-digit Remita Retrieval Reference (numbers only)</div>
-                            <div class="field-error" id="remita_number_error">RRR must be exactly 12 digits (numbers only).</div>
-                        </div>
+                    <div class="form-group">
+                        <label for="amount_paid">Amount Paid (₦) <span style="color:#c0392b">*</span></label>
+                        <input type="number" name="amount_paid" id="amount_paid" step="0.01" required
+                            placeholder="Enter the amount you paid">
+                    </div>
+                </div>
 
-                        <div class="form-group">
-                            <label for="remita_file">Remita Document <span style="color:#c0392b">*</span></label>
-                            <div class="file-upload-wrapper">
-                                <input type="file" name="remita_file" id="remita_file"
-                                    accept=".pdf,.jpg,.jpeg,.png" required>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="remita_number">Remita RRR Number <span style="color:#c0392b">*</span></label>
+                        <input type="text" name="remita_number" id="remita_number"
+                            placeholder="e.g. 191397281991"
+                            maxlength="12" minlength="12"
+                            inputmode="numeric" pattern="[0-9]{12}"
+                            autocomplete="off" required>
+                        <div class="field-hint">Enter your 12-digit Remita Retrieval Reference (numbers only)</div>
+                        <div class="field-error" id="remita_number_error">RRR must be exactly 12 digits (numbers only).</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="remita_file">Remita Document <span style="color:#c0392b">*</span></label>
+                        <div class="file-upload-wrapper">
+                            <input type="file" name="remita_file" id="remita_file"
+                                accept=".pdf,.jpg,.jpeg,.png" required>
+                        </div>
+                        <div class="field-hint">PDF, JPG or PNG — Maximum file size: 5 MB</div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Section 2: Bank Account Details -->
+        <div class="form-card">
+            <div class="form-section-header">Section 2 — Bank Account Details</div>
+            <div class="form-section-body">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="account_name">Account Name <span style="color:#c0392b">*</span></label>
+                        <input type="text" name="account_name" id="account_name" required
+                            placeholder="As it appears on your bank account"
+                            pattern="[A-Za-z ]+" autocomplete="off">
+                        <div class="field-error" id="account_name_error">Account name must contain letters and spaces only.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="account_number">Account Number <span style="color:#c0392b">*</span></label>
+                        <input type="text" name="account_number" id="account_number" required
+                            placeholder="10-digit NUBAN number"
+                            maxlength="10" minlength="10"
+                            inputmode="numeric" pattern="[0-9]{10}" autocomplete="off">
+                        <div class="field-hint">Must be exactly 10 digits (numbers only)</div>
+                        <div class="field-error" id="account_number_error">Account number must be exactly 10 digits.</div>
+                    </div>
+                </div>
+
+                <!-- Searchable Bank Combobox -->
+                <div class="form-row single">
+                    <div class="form-group">
+                        <label>Bank Name <span style="color:#c0392b">*</span></label>
+
+                        <!-- Hidden real input that gets submitted with the form -->
+                        <input type="hidden" name="bank_name" id="bank_name_hidden">
+
+                        <div class="bank-combo" id="bankCombo">
+                            <!-- Trigger button (what the user sees / clicks) -->
+                            <button type="button" class="bank-combo-trigger" id="bankTrigger"
+                                    aria-haspopup="listbox" aria-expanded="false">
+                                <span id="bankLabel" class="placeholder">— Click to search and select your bank —</span>
+                                <span class="bank-combo-arrow">&#9660;</span>
+                            </button>
+
+                            <!-- Clear selection button -->
+                            <span class="bank-clear-btn" id="bankClearBtn" title="Clear selection">&#x2715;</span>
+
+                            <!-- Dropdown panel -->
+                            <div class="bank-combo-dropdown" id="bankDropdown" role="listbox">
+                                <div class="bank-search-wrap">
+                                    <input type="text" class="bank-search-input" id="bankSearchInput"
+                                           placeholder="Type to search your bank…"
+                                           autocomplete="off" spellcheck="false">
+                                </div>
+                                <div class="bank-list-wrap" id="bankListWrap">
+                                    <div class="bank-empty">Loading banks…</div>
+                                </div>
                             </div>
-                            <div class="field-hint">PDF, JPG or PNG — Maximum file size: 5 MB</div>
                         </div>
-                    </div>
 
+                        <div class="field-hint">Type part of your bank name to filter the list</div>
+                        <div class="field-error" id="bank_name_error">Please select your bank from the list.</div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Section 2: Bank Account Details -->
-            <div class="form-card">
-                <div class="form-section-header">Section 2 — Bank Account Details</div>
-                <div class="form-section-body">
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="account_name">Account Name <span style="color:#c0392b">*</span></label>
-                            <input type="text" name="account_name" id="account_name" required
-                                placeholder="As it appears on your bank account"
-                                pattern="[A-Za-z ]+"
-                                autocomplete="off">
-                            <div class="field-error" id="account_name_error">Account name must contain letters and spaces only (no numbers or symbols).</div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="account_number">Account Number <span style="color:#c0392b">*</span></label>
-                            <input type="text" name="account_number" id="account_number" required
-                                placeholder="10-digit NUBAN number"
-                                maxlength="10" minlength="10"
-                                inputmode="numeric"
-                                pattern="[0-9]{10}"
-                                autocomplete="off">
-                            <div class="field-hint">Must be exactly 10 digits (numbers only)</div>
-                            <div class="field-error" id="account_number_error">Account number must be exactly 10 digits (numbers only).</div>
-                        </div>
-                    </div>
-
-                    <div class="form-row single">
-                        <div class="form-group">
-                            <label for="bank_name">Bank Name <span style="color:#c0392b">*</span></label>
-                            <select name="bank_name" id="bank_name" required>
-                                <option value="">— Select Your Bank —</option>
-                            </select>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-            <button type="submit" class="btn-submit" id="submitBtn">
-                ✅ Submit Refund Request
-            </button>
-        </form>
-    </div>
-
-    <!-- Confirmation Modal -->
-    <div class="modal-overlay" id="confirmModal">
-        <div class="modal-card">
-            <div class="modal-title">Confirm Your Details</div>
-            <div id="modalDetails"></div>
-            <div class="modal-actions">
-                <button type="button" class="btn-edit" id="btnEdit" onclick="closeModal()">Edit Details</button>
-                <button type="button" class="btn-confirm" id="btnConfirm" onclick="submitForm()">Confirm &amp; Submit</button>
             </div>
         </div>
+
+        <button type="submit" class="btn-submit" id="submitBtn">
+            ✅ Submit Refund Request
+        </button>
+    </form>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal-overlay" id="confirmModal">
+    <div class="modal-card">
+        <div class="modal-title">Confirm Your Details</div>
+        <div id="modalDetails"></div>
+        <div class="modal-actions">
+            <button type="button" class="btn-edit" id="btnEdit" onclick="closeConfirmModal()">Edit Details</button>
+            <button type="button" class="btn-confirm" id="btnConfirm" onclick="doSubmitForm()">Confirm &amp; Submit</button>
+        </div>
     </div>
+</div>
 
-    <!-- Scripts -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+/* ================================================================
+   SEARCHABLE BANK COMBOBOX  —  100% Vanilla JS, Zero CDN/jQuery
+   ================================================================ */
+(function () {
+    var allBanks   = [];      // full sorted list after JSON load
+    var selected   = '';      // currently selected bank name
+    var kbIdx      = -1;      // keyboard-focused option index
 
-    <script>
-        // ── Load Banks (Vanilla JS, offline-safe fallback) ──────────────────
-        document.addEventListener('DOMContentLoaded', function() {
-            fetch('/data/banks.json')
-                .then(response => response.json())
-                .then(data => {
-                    const bankSelect = document.getElementById('bank_name');
-                    if (bankSelect) {
-                        const bankNames = Object.keys(data).sort();
-                        bankNames.forEach(bank => {
-                            const option = document.createElement('option');
-                            option.value = bank;
-                            option.textContent = bank;
-                            bankSelect.appendChild(option);
-                        });
-                        
-                        // If jQuery and Select2 libraries loaded successfully, initialize Select2
-                        if (typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
-                            $('#bank_name').select2({
-                                placeholder: "— Select Your Bank —",
-                                allowClear: true
-                            });
-                            $('#bank_name').trigger('change');
-                        }
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading banks:', error);
-                    // Add a default error/fallback option to select manually if file is missing
-                    const bankSelect = document.getElementById('bank_name');
-                    if (bankSelect) {
-                        const option = document.createElement('option');
-                        option.value = "";
-                        option.textContent = "⚠️ Error loading bank list. Please refresh or contact admin.";
-                        bankSelect.appendChild(option);
-                    }
-                });
+    var combo      = document.getElementById('bankCombo');
+    var trigger    = document.getElementById('bankTrigger');
+    var label      = document.getElementById('bankLabel');
+    var hidden     = document.getElementById('bank_name_hidden');
+    var dropdown   = document.getElementById('bankDropdown');
+    var searchInp  = document.getElementById('bankSearchInput');
+    var listWrap   = document.getElementById('bankListWrap');
+    var clearBtn   = document.getElementById('bankClearBtn');
+    var bankErr    = document.getElementById('bank_name_error');
+
+    /* -- Load banks from local JSON --------------------------------- */
+    fetch('/data/banks.json')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            allBanks = Object.keys(data).sort().map(function (n) {
+                return { name: n, code: data[n] };
+            });
+            renderOptions(allBanks);
+        })
+        .catch(function () {
+            listWrap.innerHTML = '<div class="bank-empty">⚠️ Could not load bank list. Please refresh the page.</div>';
         });
 
-        // ── Form Submission and Modal Logic ────────────────────────────────
-        const form           = document.getElementById('refundForm');
-        const modal          = document.getElementById('confirmModal');
-        const modalDetails   = document.getElementById('modalDetails');
-        const loadingOverlay = document.getElementById('loadingOverlay');
-        const dynamicError   = document.getElementById('dynamicError');
-
-        function showError(msg) {
-            dynamicError.textContent = msg;
-            dynamicError.style.display = 'block';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+    /* -- Render filtered option list -------------------------------- */
+    function renderOptions(banks) {
+        if (banks.length === 0) {
+            listWrap.innerHTML = '<div class="bank-empty">No banks match your search.</div>';
+            kbIdx = -1;
+            return;
         }
+        listWrap.innerHTML = banks.map(function (b, i) {
+            var cls = 'bank-option' + (b.name === selected ? ' is-selected' : '');
+            return '<div class="' + cls + '" data-name="' + escHtml(b.name) + '" data-i="' + i + '">' + escHtml(b.name) + '</div>';
+        }).join('');
+        kbIdx = -1;
+    }
 
-        function hideError() {
-            dynamicError.style.display = 'none';
-            dynamicError.textContent = '';
+    /* -- Open / close ---------------------------------------------- */
+    function openDropdown() {
+        combo.classList.add('open');
+        trigger.setAttribute('aria-expanded', 'true');
+        searchInp.value = '';
+        renderOptions(allBanks);
+        kbIdx = -1;
+        setTimeout(function () { searchInp.focus(); }, 40);
+    }
+
+    function closeDropdown() {
+        combo.classList.remove('open');
+        trigger.setAttribute('aria-expanded', 'false');
+    }
+
+    /* -- Select a bank --------------------------------------------- */
+    function pickBank(name) {
+        selected       = name;
+        hidden.value   = name;
+        label.textContent = name;
+        label.className   = 'selected-text';
+        trigger.classList.add('valid');
+        trigger.classList.remove('invalid');
+        bankErr.style.display = 'none';
+        clearBtn.classList.add('visible');
+    }
+
+    /* -- Clear selection ------------------------------------------- */
+    function clearBank() {
+        selected       = '';
+        hidden.value   = '';
+        label.textContent = '— Click to search and select your bank —';
+        label.className   = 'placeholder';
+        trigger.classList.remove('valid', 'invalid');
+        bankErr.style.display = 'none';
+        clearBtn.classList.remove('visible');
+        searchInp.value = '';
+        renderOptions(allBanks);
+    }
+
+    /* -- Keyboard focus highlight ---------------------------------- */
+    function highlightKb() {
+        var opts = listWrap.querySelectorAll('.bank-option');
+        opts.forEach(function (o, i) {
+            if (i === kbIdx) {
+                o.classList.add('kb-focus');
+                o.scrollIntoView({ block: 'nearest' });
+            } else {
+                o.classList.remove('kb-focus');
+            }
+        });
+    }
+
+    /* -- HTML escape helper ---------------------------------------- */
+    function escHtml(s) {
+        return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    /* ---- Events -------------------------------------------------- */
+
+    // Toggle dropdown on trigger click
+    trigger.addEventListener('click', function () {
+        combo.classList.contains('open') ? closeDropdown() : openDropdown();
+    });
+
+    // Clear button
+    clearBtn.addEventListener('mousedown', function (e) {
+        e.preventDefault();
+        clearBank();
+        trigger.focus();
+    });
+
+    // Filter as user types
+    searchInp.addEventListener('input', function () {
+        var q = this.value.trim().toLowerCase();
+        var filtered = q
+            ? allBanks.filter(function (b) { return b.name.toLowerCase().includes(q); })
+            : allBanks;
+        renderOptions(filtered);
+    });
+
+    // Keyboard navigation inside search box
+    searchInp.addEventListener('keydown', function (e) {
+        var opts = listWrap.querySelectorAll('.bank-option');
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            kbIdx = Math.min(kbIdx + 1, opts.length - 1);
+            highlightKb();
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            kbIdx = Math.max(kbIdx - 1, 0);
+            highlightKb();
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (kbIdx >= 0 && opts[kbIdx]) {
+                pickBank(opts[kbIdx].getAttribute('data-name'));
+                closeDropdown();
+                trigger.focus();
+            }
+        } else if (e.key === 'Escape') {
+            closeDropdown();
+            trigger.focus();
         }
+    });
 
-        function setFieldError(inputEl, errorEl, hasError) {
-            if (hasError) {
-                inputEl.classList.add('input-invalid');
-                inputEl.classList.remove('input-valid');
-                errorEl.style.display = 'block';
-            } else {
-                inputEl.classList.remove('input-invalid');
-                inputEl.classList.add('input-valid');
-                errorEl.style.display = 'none';
-            }
+    // Click on option
+    listWrap.addEventListener('mousedown', function (e) {
+        var opt = e.target.closest('.bank-option');
+        if (opt) {
+            e.preventDefault();
+            pickBank(opt.getAttribute('data-name'));
+            closeDropdown();
+            trigger.focus();
         }
+    });
 
-        // ── Real-time: RRR — numbers only ─────────────────────────────────
-        const remitaInput = document.getElementById('remita_number');
-        const remitaError = document.getElementById('remita_number_error');
+    // Close when clicking outside
+    document.addEventListener('mousedown', function (e) {
+        if (!combo.contains(e.target)) closeDropdown();
+    });
 
-        remitaInput.addEventListener('input', function () {
-            this.value = this.value.replace(/[^0-9]/g, '');
-            if (this.value.length > 0) {
-                setFieldError(this, remitaError, this.value.length !== 12);
-            } else {
-                this.classList.remove('input-invalid', 'input-valid');
-                remitaError.style.display = 'none';
-            }
-        });
-        remitaInput.addEventListener('keypress', function (e) { if (!/[0-9]/.test(e.key)) e.preventDefault(); });
-        remitaInput.addEventListener('paste', function (e) {
-            e.preventDefault();
-            const pasted = (e.clipboardData || window.clipboardData).getData('text');
-            this.value = pasted.replace(/[^0-9]/g, '').slice(0, 12);
-            this.dispatchEvent(new Event('input'));
-        });
-
-        // ── Real-time: Account Number ──────────────────────────────────────
-        const acctNumInput = document.getElementById('account_number');
-        const acctNumError = document.getElementById('account_number_error');
-
-        acctNumInput.addEventListener('input', function () {
-            this.value = this.value.replace(/[^0-9]/g, '');
-            if (this.value.length > 0) {
-                setFieldError(this, acctNumError, this.value.length !== 10);
-            } else {
-                this.classList.remove('input-invalid', 'input-valid');
-                acctNumError.style.display = 'none';
-            }
-        });
-        acctNumInput.addEventListener('keypress', function (e) { if (!/[0-9]/.test(e.key)) e.preventDefault(); });
-        acctNumInput.addEventListener('paste', function (e) {
-            e.preventDefault();
-            const pasted = (e.clipboardData || window.clipboardData).getData('text');
-            this.value = pasted.replace(/[^0-9]/g, '').slice(0, 10);
-            this.dispatchEvent(new Event('input'));
-        });
-
-        // ── Real-time: Account Name ────────────────────────────────────────
-        const acctNameInput = document.getElementById('account_name');
-        const acctNameError = document.getElementById('account_name_error');
-
-        acctNameInput.addEventListener('input', function () {
-            this.value = this.value.replace(/[^A-Za-z ]/g, '');
-            if (this.value.trim().length > 0) {
-                setFieldError(this, acctNameError, false);
-            } else if (this.value.length > 0) {
-                setFieldError(this, acctNameError, true);
-            } else {
-                this.classList.remove('input-invalid', 'input-valid');
-                acctNameError.style.display = 'none';
-            }
-        });
-        acctNameInput.addEventListener('keypress', function (e) { if (!/[A-Za-z ]/.test(e.key)) e.preventDefault(); });
-        acctNameInput.addEventListener('paste', function (e) {
-            e.preventDefault();
-            const pasted = (e.clipboardData || window.clipboardData).getData('text');
-            this.value = pasted.replace(/[^A-Za-z ]/g, '');
-            this.dispatchEvent(new Event('input'));
-        });
-
-        // ── Form submit with full validation ──────────────────────────────
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            hideError();
-
-            let hasErrors = false;
-
-            const file = document.getElementById('remita_file').files[0];
-            if (!file) { showError('Please upload your Remita document.'); return; }
-            if (file.size > 5242880) { showError('File size exceeds 5 MB. Please upload a smaller file.'); return; }
-
-            const rrr = remitaInput.value.trim();
-            if (!/^[0-9]{12}$/.test(rrr)) { setFieldError(remitaInput, remitaError, true); hasErrors = true; }
-
-            const acct = acctNumInput.value.trim();
-            if (!/^[0-9]{10}$/.test(acct)) { setFieldError(acctNumInput, acctNumError, true); hasErrors = true; }
-
-            const acctName = acctNameInput.value.trim();
-            if (!/^[A-Za-z ]+$/.test(acctName)) { setFieldError(acctNameInput, acctNameError, true); hasErrors = true; }
-
-            if (hasErrors) { showError('Please fix the highlighted fields before submitting.'); return; }
-
-            // Populate and show confirmation modal
-            const paymentType     = document.getElementById('payment_type').options[document.getElementById('payment_type').selectedIndex].text;
-            const amount          = document.getElementById('amount_paid').value;
-            const bankName        = document.getElementById('bank_name').value;
-            const formattedAmount = new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
-
-            modalDetails.innerHTML = `
-                <div class="modal-detail"><strong>Payment Type:</strong> <span>${paymentType}</span></div>
-                <div class="modal-detail"><strong>Amount Paid:</strong> <span>${formattedAmount}</span></div>
-                <div class="modal-detail"><strong>Remita RRR:</strong> <span>${rrr}</span></div>
-                <hr style="margin:12px 0;border:0;border-top:1px solid #eee;">
-                <div class="modal-detail"><strong>Account Name:</strong> <span>${acctName}</span></div>
-                <div class="modal-detail"><strong>Account No:</strong> <span>${acct}</span></div>
-                <div class="modal-detail"><strong>Bank Name:</strong> <span>${bankName}</span></div>
-            `;
-            modal.classList.add('active');
-        });
-
-        function closeModal() { modal.classList.remove('active'); }
-
-        async function submitForm() {
-            modal.classList.remove('active');
-            loadingOverlay.classList.add('active');
-            document.getElementById('submitBtn').disabled = true;
-            document.getElementById('btnConfirm').disabled = true;
-
-            try {
-                const formData = new FormData(form);
-                const response = await fetch('/student/refund-request', { method: 'POST', body: formData });
-                const result   = await response.json();
-
-                if (result.success) {
-                    window.location.href = result.redirect || '/student/dashboard';
-                } else {
-                    loadingOverlay.classList.remove('active');
-                    document.getElementById('submitBtn').disabled = false;
-                    document.getElementById('btnConfirm').disabled = false;
-                    showError(result.error || 'Submission failed. Please try again.');
-                }
-            } catch (networkErr) {
-                loadingOverlay.classList.remove('active');
-                document.getElementById('submitBtn').disabled = false;
-                document.getElementById('btnConfirm').disabled = false;
-                showError('Network error. Please check your connection and try again.');
-            }
+    // Public validation called by form submit handler
+    window._validateBank = function () {
+        if (!hidden.value) {
+            trigger.classList.add('invalid');
+            bankErr.style.display = 'block';
+            return false;
         }
-    </script>
+        return true;
+    };
+})();
+
+/* ================================================================
+   FORM VALIDATION & SUBMISSION
+   ================================================================ */
+var form           = document.getElementById('refundForm');
+var modal          = document.getElementById('confirmModal');
+var modalDetails   = document.getElementById('modalDetails');
+var loadingOverlay = document.getElementById('loadingOverlay');
+var dynamicError   = document.getElementById('dynamicError');
+
+function showError(msg) {
+    dynamicError.textContent = msg;
+    dynamicError.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function hideError() {
+    dynamicError.style.display = 'none';
+    dynamicError.textContent = '';
+}
+function setFieldErr(inp, errEl, bad) {
+    if (bad) {
+        inp.classList.add('input-invalid');
+        inp.classList.remove('input-valid');
+        errEl.style.display = 'block';
+    } else {
+        inp.classList.remove('input-invalid');
+        inp.classList.add('input-valid');
+        errEl.style.display = 'none';
+    }
+}
+
+/* ── Real-time: RRR ── */
+var remitaInp = document.getElementById('remita_number');
+var remitaErr = document.getElementById('remita_number_error');
+remitaInp.addEventListener('input', function () {
+    this.value = this.value.replace(/[^0-9]/g, '');
+    if (this.value.length > 0) setFieldErr(this, remitaErr, this.value.length !== 12);
+    else { this.classList.remove('input-invalid','input-valid'); remitaErr.style.display='none'; }
+});
+remitaInp.addEventListener('keypress', function (e) { if (!/[0-9]/.test(e.key)) e.preventDefault(); });
+remitaInp.addEventListener('paste', function (e) {
+    e.preventDefault();
+    this.value = (e.clipboardData||window.clipboardData).getData('text').replace(/[^0-9]/g,'').slice(0,12);
+    this.dispatchEvent(new Event('input'));
+});
+
+/* ── Real-time: Account Number ── */
+var acctNumInp = document.getElementById('account_number');
+var acctNumErr = document.getElementById('account_number_error');
+acctNumInp.addEventListener('input', function () {
+    this.value = this.value.replace(/[^0-9]/g, '');
+    if (this.value.length > 0) setFieldErr(this, acctNumErr, this.value.length !== 10);
+    else { this.classList.remove('input-invalid','input-valid'); acctNumErr.style.display='none'; }
+});
+acctNumInp.addEventListener('keypress', function (e) { if (!/[0-9]/.test(e.key)) e.preventDefault(); });
+acctNumInp.addEventListener('paste', function (e) {
+    e.preventDefault();
+    this.value = (e.clipboardData||window.clipboardData).getData('text').replace(/[^0-9]/g,'').slice(0,10);
+    this.dispatchEvent(new Event('input'));
+});
+
+/* ── Real-time: Account Name ── */
+var acctNameInp = document.getElementById('account_name');
+var acctNameErr = document.getElementById('account_name_error');
+acctNameInp.addEventListener('input', function () {
+    this.value = this.value.replace(/[^A-Za-z ]/g, '');
+    if (this.value.trim().length > 0) setFieldErr(this, acctNameErr, false);
+    else if (this.value.length > 0) setFieldErr(this, acctNameErr, true);
+    else { this.classList.remove('input-invalid','input-valid'); acctNameErr.style.display='none'; }
+});
+acctNameInp.addEventListener('keypress', function (e) { if (!/[A-Za-z ]/.test(e.key)) e.preventDefault(); });
+acctNameInp.addEventListener('paste', function (e) {
+    e.preventDefault();
+    this.value = (e.clipboardData||window.clipboardData).getData('text').replace(/[^A-Za-z ]/g,'');
+    this.dispatchEvent(new Event('input'));
+});
+
+/* ── Form Submit ── */
+form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    hideError();
+
+    var hasErr = false;
+
+    var file = document.getElementById('remita_file').files[0];
+    if (!file)              { showError('Please upload your Remita document.'); return; }
+    if (file.size > 5242880){ showError('File size exceeds 5 MB. Please upload a smaller file.'); return; }
+
+    var rrr = remitaInp.value.trim();
+    if (!/^[0-9]{12}$/.test(rrr)) { setFieldErr(remitaInp, remitaErr, true); hasErr = true; }
+
+    var acct = acctNumInp.value.trim();
+    if (!/^[0-9]{10}$/.test(acct)) { setFieldErr(acctNumInp, acctNumErr, true); hasErr = true; }
+
+    var acctName = acctNameInp.value.trim();
+    if (!/^[A-Za-z ]+$/.test(acctName)) { setFieldErr(acctNameInp, acctNameErr, true); hasErr = true; }
+
+    if (!window._validateBank()) hasErr = true;
+
+    if (hasErr) { showError('Please fix the highlighted fields before submitting.'); return; }
+
+    /* Build confirmation modal content */
+    var ptSel    = document.getElementById('payment_type');
+    var ptLabel  = ptSel.options[ptSel.selectedIndex].text;
+    var amount   = document.getElementById('amount_paid').value;
+    var bankName = document.getElementById('bank_name_hidden').value;
+    var fmtAmt   = new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN' }).format(amount);
+
+    modalDetails.innerHTML =
+        '<div class="modal-detail"><strong>Payment Type:</strong> <span>' + ptLabel + '</span></div>' +
+        '<div class="modal-detail"><strong>Amount Paid:</strong> <span>' + fmtAmt + '</span></div>' +
+        '<div class="modal-detail"><strong>Remita RRR:</strong> <span>' + rrr + '</span></div>' +
+        '<hr style="margin:12px 0;border:0;border-top:1px solid #eee;">' +
+        '<div class="modal-detail"><strong>Account Name:</strong> <span>' + acctName + '</span></div>' +
+        '<div class="modal-detail"><strong>Account No:</strong> <span>' + acct + '</span></div>' +
+        '<div class="modal-detail"><strong>Bank Name:</strong> <span>' + bankName + '</span></div>';
+
+    modal.classList.add('active');
+});
+
+function closeConfirmModal() { modal.classList.remove('active'); }
+
+async function doSubmitForm() {
+    modal.classList.remove('active');
+    loadingOverlay.classList.add('active');
+    document.getElementById('submitBtn').disabled   = true;
+    document.getElementById('btnConfirm').disabled  = true;
+
+    try {
+        var formData = new FormData(form);
+        var response = await fetch('/student/refund-request', { method: 'POST', body: formData });
+        var result   = await response.json();
+
+        if (result.success) {
+            window.location.href = result.redirect || '/student/dashboard';
+        } else {
+            loadingOverlay.classList.remove('active');
+            document.getElementById('submitBtn').disabled  = false;
+            document.getElementById('btnConfirm').disabled = false;
+            showError(result.error || 'Submission failed. Please try again.');
+        }
+    } catch (netErr) {
+        loadingOverlay.classList.remove('active');
+        document.getElementById('submitBtn').disabled  = false;
+        document.getElementById('btnConfirm').disabled = false;
+        showError('Network error. Please check your connection and try again.');
+    }
+}
+</script>
 
 <%- include('partials/footer') %>

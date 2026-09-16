@@ -4,6 +4,7 @@ const multer = require('multer');
 const path = require('path');
 const db = require('../config/database');
 const { requireStudentAuth } = require('../middleware/auth');
+const { logStudentActivity } = require('../utils/logger');
 
 // Configure multer for file upload
 const storage = multer.diskStorage({
@@ -195,6 +196,16 @@ async function handleRefundSubmit(req, res) {
         console.log(`=> [SUBMIT] Transaction commit took ${Date.now() - commitStart}ms. Total process time: ${Date.now() - startTime}ms`);
         console.log('✅ Refund request created successfully');
 
+        // Log student refund submission activity
+        const studentInfo = req.session.student;
+        await logStudentActivity(
+            regNumber,
+            studentInfo ? studentInfo.full_name : regNumber,
+            'REFUND_SUBMITTED',
+            `Student ${studentInfo ? studentInfo.full_name : regNumber} (${regNumber}) submitted a refund request. Payment type: ${payment_type}, Amount: ₦${amountPaid.toLocaleString()}.`,
+            req
+        );
+
         // Return JSON so the AJAX client can navigate immediately
         return res.json({ success: true, redirect: '/student/dashboard' });
 
@@ -251,6 +262,16 @@ router.post('/complaints', requireStudentAuth, async (req, res) => {
         await db.query(
             `INSERT INTO complaints (reg_number, subject, message) VALUES ($1, $2, $3)`,
             [regNumber, subject, message]
+        );
+
+        // Log complaint submission activity
+        const studentInfo = req.session.student;
+        await logStudentActivity(
+            regNumber,
+            studentInfo ? studentInfo.full_name : regNumber,
+            'COMPLAINT_SUBMITTED',
+            `Student ${studentInfo ? studentInfo.full_name : regNumber} (${regNumber}) submitted a complaint: "${subject}".`,
+            req
         );
 
         const [complaints] = await db.query(

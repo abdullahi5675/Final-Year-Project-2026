@@ -1,0 +1,302 @@
+<%- include('partials/header', { title: 'Federal University of Technology, Babura — NELFUND Refund Portal' }) %>
+
+<style>
+/* Landing Home Page Custom Styles */
+.hero-section {
+    background: linear-gradient(135deg, #0f172a 0%, #152c5b 100%);
+    color: white;
+    padding: 72px 24px;
+    text-align: center;
+    border-bottom: 3px solid #1e3a8a;
+}
+.hero-container {
+    max-width: 920px;
+    margin: 0 auto;
+}
+.hero-logo-badge {
+    background: #ffffff;
+    padding: 14px 24px;
+    border-radius: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.hero-logo {
+    height: 72px;
+    width: auto;
+    object-fit: contain;
+}
+.hero-title {
+    font-size: 34px;
+    font-weight: 800;
+    margin-bottom: 14px;
+    letter-spacing: -0.5px;
+    line-height: 1.25;
+}
+.hero-subtitle {
+    font-size: 17px;
+    color: #cbd5e1;
+    max-width: 720px;
+    margin: 0 auto 36px auto;
+    line-height: 1.6;
+}
+.hero-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.btn-hero-primary {
+    background: #2563eb;
+    color: white;
+    padding: 14px 30px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    transition: background 0.2s, transform 0.1s;
+    box-shadow: 0 4px 16px rgba(37,99,235,0.35);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.btn-hero-primary:hover {
+    background: #1d4ed8;
+    transform: translateY(-2px);
+}
+.btn-hero-secondary {
+    background: rgba(255,255,255,0.1);
+    color: white;
+    padding: 14px 30px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    border: 1px solid rgba(255,255,255,0.25);
+    transition: background 0.2s, transform 0.1s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.btn-hero-secondary:hover {
+    background: rgba(255,255,255,0.2);
+    transform: translateY(-2px);
+}
+.features-section {
+    padding: 64px 24px;
+    background: #f8fafc;
+}
+.section-header {
+    text-align: center;
+    margin-bottom: 48px;
+}
+.section-header h2 {
+    font-size: 26px;
+    color: #0f172a;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+.section-header p {
+    color: #64748b;
+    font-size: 15px;
+}
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 28px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+.feature-card {
+    background: white;
+    padding: 32px 28px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(15,23,42,0.08);
+}
+.feature-icon-box {
+    width: 48px;
+    height: 48px;
+    background: #eff6ff;
+    color: #2563eb;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+.feature-icon-box svg {
+    width: 24px;
+    height: 24px;
+    stroke: #2563eb;
+    stroke-width: 2;
+    fill: none;
+}
+.feature-card h3 {
+    font-size: 18px;
+    color: #0f172a;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+.feature-card p {
+    font-size: 14px;
+    color: #475569;
+    line-height: 1.6;
+}
+.steps-section {
+    padding: 64px 24px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+.step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-bottom: 20px;
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+.step-number {
+    background: #152c5b;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+.step-content h4 {
+    font-size: 16.5px;
+    color: #0f172a;
+    margin-bottom: 6px;
+    font-weight: 700;
+}
+.step-content p {
+    font-size: 14px;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.5;
+}
+</style>
+
+<!-- Top Navbar -->
+<nav class="navbar">
+    <div class="navbar-brand">
+        <div style="background: white; padding: 4px 8px; border-radius: 6px; display: flex; align-items: center;">
+            <img src="/FUTBBBBBBB.png" alt="FUTB Logo" style="height:36px;">
+        </div>
+        <div class="navbar-brand-text">
+            <div class="portal-title">NELFUND Student Refund Portal</div>
+            <div class="portal-sub">Federal University of Technology, Babura</div>
+        </div>
+    </div>
+    <div class="navbar-right">
+        <a href="/login" class="btn-logout" style="border-radius:6px; background:#2563eb; font-weight:600;">Student Login</a>
+        <a href="/staff/login" style="color:#cbd5e1; font-weight:500;">Staff / Admin Portal</a>
+    </div>
+</nav>
+
+<!-- Hero Section with Crisp White Logo Badge -->
+<div class="hero-section">
+    <div class="hero-container">
+        <div class="hero-logo-badge">
+            <img src="/FUTBBBBBBB.png" alt="FUTB Logo" class="hero-logo">
+        </div>
+        <h1 class="hero-title">Federal University of Technology, Babura</h1>
+        <div class="hero-subtitle">
+            Official NELFUND Student Refund Processing Portal. Designed to automate verification, ensure data security, and expedite institutional refund claims for eligible students.
+        </div>
+        <div class="hero-buttons">
+            <a href="/login" class="btn-hero-primary">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                Student Refund Portal
+            </a>
+            <a href="/staff/login" class="btn-hero-secondary">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                Staff / Admin Login
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="features-section">
+    <div class="section-header">
+        <h2>Enterprise Features & Capabilities</h2>
+        <p>Providing seamless, transparent, and verified refund processing for students and university administration.</p>
+    </div>
+
+    <div class="grid-3">
+        <div class="feature-card">
+            <div class="feature-icon-box">
+                <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" /></svg>
+            </div>
+            <h3>Direct Bank Refund Claims</h3>
+            <p>Students eligible under the NELFUND scheme can log in using their Registration Number, submit verified Remita payment proofs, and enter active bank account details.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon-box">
+                <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+            </div>
+            <h3>Bursary Batch Processing</h3>
+            <p>Staff verify submitted documents and generate structured Excel schedules directly formatted for official university Bursary disbursement.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon-box">
+                <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751A11.959 11.959 0 0112 2.714z" /></svg>
+            </div>
+            <h3>Role-Based Security & Audit Logs</h3>
+            <p>Role-based access control, encrypted password authentication, staff data isolation, and comprehensive activity logging for administrative accountability.</p>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works Section -->
+<div class="steps-section">
+    <div class="section-header">
+        <h2>How to Request Your NELFUND Refund</h2>
+        <p>Follow these 3 simple steps to submit your refund request.</p>
+    </div>
+
+    <div class="step-item">
+        <div class="step-number">1</div>
+        <div class="step-content">
+            <h4>Check Eligibility & Log In</h4>
+            <p>Enter your Registration/Matriculation Number. The portal automatically verifies your presence on the approved NELFUND list uploaded by the university.</p>
+        </div>
+    </div>
+
+    <div class="step-item">
+        <div class="step-number">2</div>
+        <div class="step-content">
+            <h4>Submit Proof of Payment & Bank Details</h4>
+            <p>Upload your original Remita receipt (PDF/Image), enter your Remita Retrieval Reference (RRR), refund amount, and verified bank account information.</p>
+        </div>
+    </div>
+
+    <div class="step-item">
+        <div class="step-number">3</div>
+        <div class="step-content">
+            <h4>Track Status & Resolution</h4>
+            <p>Monitor your request status (Pending, Approved, or Rejected) and view replies to any complaints directly from your student dashboard.</p>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

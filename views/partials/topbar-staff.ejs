@@ -1,0 +1,42 @@
+<!-- App Header Topbar -->
+<header class="app-topbar">
+    <div class="topbar-left">
+        <button class="sidebar-toggle-btn" onclick="toggleSidebar()" aria-label="Toggle Navigation Drawer">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+        <div class="topbar-page-title">
+            <%= typeof pageTitle !== 'undefined' ? pageTitle : 'Portal Dashboard' %>
+        </div>
+    </div>
+
+    <div class="topbar-right">
+        <div class="user-profile-pill">
+            <div class="user-avatar">
+                <%= staff.full_name.charAt(0).toUpperCase() %>
+            </div>
+            <div>
+                <span style="font-weight: 600; color: #1e293b;"><%= staff.full_name %></span>
+                <span style="font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; margin-left: 4px;">
+                    <%= staff.role %>
+                </span>
+            </div>
+        </div>
+    </div>
+</header>
+
+<script>
+    function toggleSidebar() {
+        const wrapper = document.getElementById('appWrapper');
+        if (wrapper) {
+            if (window.innerWidth >= 992) {
+                wrapper.classList.toggle('sidebar-collapsed');
+            } else {
+                wrapper.classList.toggle('sidebar-open');
+            }
+        }
+    }
+</script>

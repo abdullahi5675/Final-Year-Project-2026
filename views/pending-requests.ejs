@@ -1,129 +1,148 @@
 <%- include('partials/header', { title: 'NELFUND — Pending Refund Requests' }) %>
 
-    <%- include('partials/navbar-staff', { staff, activePage: 'pending' }) %>
+<div class="app-wrapper" id="appWrapper">
+    <%- include('partials/sidebar-staff', { staff, activePage: 'pending' }) %>
 
-    <div class="container">
-        <h1 class="page-heading">Pending Refund Requests</h1>
+    <main class="app-main">
+        <%- include('partials/topbar-staff', { staff, pageTitle: 'Pending Refund Requests' }) %>
 
-        <% if (requests.length === 0) { %>
-            <div class="no-requests">
-                <h3>No Pending Requests</h3>
-                <p>All submitted requests have been processed.</p>
-            </div>
-        <% } else { %>
-            <% requests.forEach(function(request) { %>
-                <div class="request-card">
-                    <div class="request-card-header">
-                        <span>Request #<%= request.request_id %> &mdash; <%= request.full_name %></span>
-                        <span style="font-size:12px; font-weight:400; opacity:0.85;">
-                            <%= new Date(request.submitted_at).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) %>
-                        </span>
-                    </div>
-
-                    <div class="request-card-body">
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <div class="info-label">Reg. Number</div>
-                                <div class="info-value"><%= request.reg_number %></div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">Department</div>
-                                <div class="info-value"><%= request.department %></div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">Payment Type</div>
-                                <div class="info-value"><%= request.payment_type.replace(/_/g, ' ') %></div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">Amount Paid</div>
-                                <div class="info-value">₦<%= parseFloat(request.amount_paid).toLocaleString() %></div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">Refund Amount</div>
-                                <div class="info-value">₦<%= parseFloat(request.refund_amount).toLocaleString() %></div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">Remita Number</div>
-                                <div class="info-value"><%= request.remita_number %></div>
-                            </div>
-                        </div>
-
-                        <hr class="divider">
-
-                        <div class="info-grid">
-                            <div class="info-item">
-                                <div class="info-label">Account Name</div>
-                                <div class="info-value"><%= request.account_name %></div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">Account Number</div>
-                                <div class="info-value"><%= request.account_number %></div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-label">Bank</div>
-                                <div class="info-value"><%= request.bank_name %></div>
-                            </div>
-                        </div>
-
-                        <hr class="divider">
-
-                        <div class="action-row">
-                            <a href="/uploads/remita/<%= request.file_path.replace(/\\\\/g, '/').split('/').pop() %>"
-                                target="_blank" class="btn btn-view">View Remita Document</a>
-
-                            <form method="POST" action="/staff/verify-request/<%= request.request_id %>"
-                                style="display:inline;">
-                                <input type="hidden" name="action" value="approve">
-                                <button type="submit" class="btn btn-approve"
-                                    onclick="return confirm('Approve this refund request?')">
-                                    &#10003; Approve
-                                </button>
-                            </form>
-
-                            <button class="btn btn-reject"
-                                onclick="showRejectModal('<%= request.request_id %>')">
-                                &#10007; Reject
-                            </button>
-                        </div>
-                    </div>
+        <div class="app-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <div>
+                    <h1 class="page-heading" style="margin-bottom: 4px; border: none; padding: 0;">Pending Refund Requests</h1>
+                    <p style="color: #64748b; font-size: 14px;">Review submitted student refund claims, verify uploaded Remita documents, and approve or reject applications.</p>
                 </div>
-            <% }); %>
-        <% } %>
-    </div>
-
-    <!-- Rejection Modal -->
-    <div id="rejectModal" class="modal">
-        <div class="modal-box">
-            <div class="modal-title">
-                <span>Reject Request</span>
-                <span class="modal-close" onclick="closeRejectModal()">&times;</span>
             </div>
-            <form id="rejectForm" method="POST" action="">
-                <input type="hidden" name="action" value="reject">
-                <label class="modal-label" for="rejection_reason">Reason for Rejection <span style="color:#c0392b">*</span></label>
-                <textarea name="rejection_reason" id="rejection_reason" required
-                    placeholder="Please provide a clear reason for rejecting this request..."></textarea>
-                <button type="submit" class="btn-submit-reject">Submit Rejection</button>
-            </form>
+
+            <% if (requests.length === 0) { %>
+                <div style="text-align: center; padding: 60px 40px; background: white; border: 1px solid #e2e8f0; border-radius: 12px; color: #64748b; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+                    <div style="display:inline-flex; width:56px; height:56px; background:#f0fdf4; border-radius:50%; align-items:center; justify-content:center; margin-bottom:16px; color:#16a34a;">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <h3 style="font-size: 18px; color: #0f172a; margin-bottom: 8px; font-weight: 700;">No Pending Requests</h3>
+                    <p style="font-size: 14px; margin:0;">All submitted student refund requests have been verified and processed.</p>
+                </div>
+            <% } else { %>
+                <% requests.forEach(function(request) { %>
+                    <div class="request-card" style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(15,23,42,0.03); overflow: hidden;">
+                        <div class="request-card-header" style="background: #152c5b; color: white; padding: 16px 24px; font-size: 15px; font-weight: 700; display: flex; justify-content: space-between; align-items: center;">
+                            <span>Request #<%= request.request_id %> &mdash; <%= request.full_name %></span>
+                            <span style="font-size: 12.5px; font-weight: 400; opacity: 0.9;">
+                                Submitted: <%= new Date(request.submitted_at).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) %>
+                                <% if (request.uploader_name) { %> | Uploaded by: <%= request.uploader_name %><% } %>
+                            </span>
+                        </div>
+
+                        <div class="request-card-body" style="padding: 24px;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 18px; margin-bottom: 20px;">
+                                <div>
+                                    <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Reg. Number</div>
+                                    <div style="font-size: 14px; color: #0f172a; font-weight: 600;"><%= request.reg_number %></div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Department</div>
+                                    <div style="font-size: 14px; color: #0f172a; font-weight: 500;"><%= request.department %></div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Payment Type</div>
+                                    <div style="font-size: 14px; color: #0f172a; font-weight: 500;"><%= request.payment_type.replace(/_/g, ' ') %></div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Amount Paid</div>
+                                    <div style="font-size: 14px; color: #059669; font-weight: 700;">₦<%= parseFloat(request.amount_paid).toLocaleString() %></div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Refund Amount</div>
+                                    <div style="font-size: 14px; color: #2563eb; font-weight: 700;">₦<%= parseFloat(request.refund_amount).toLocaleString() %></div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Remita Number</div>
+                                    <div style="font-size: 14px; color: #0f172a; font-weight: 600; font-family: monospace;"><%= request.remita_number %></div>
+                                </div>
+                            </div>
+
+                            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;">
+
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 18px;">
+                                <div>
+                                    <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Account Name</div>
+                                    <div style="font-size: 14px; color: #0f172a; font-weight: 500;"><%= request.account_name %></div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Account Number</div>
+                                    <div style="font-size: 14px; color: #0f172a; font-weight: 600; font-family: monospace;"><%= request.account_number %></div>
+                                </div>
+                                <div>
+                                    <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Bank Name</div>
+                                    <div style="font-size: 14px; color: #0f172a; font-weight: 500;"><%= request.bank_name %></div>
+                                </div>
+                            </div>
+
+                            <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;">
+
+                            <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+                                <a href="/uploads/remita/<%= request.file_path ? request.file_path.replace(/\\\\/g, '/').split('/').pop() : '' %>"
+                                   target="_blank" class="btn" style="background: #0284c7; color: white; padding: 10px 18px; border-radius: 8px; font-size: 13.5px; font-weight: 600; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3h7.5M6 20.25h12A2.25 2.25 0 0020.25 18V6.75A2.25 2.25 0 0018 4.5H6A2.25 2.25 0 003.75 6.75v11.25A2.25 2.25 0 006 20.25z" /></svg>
+                                    View Remita Receipt
+                                </a>
+
+                                <form method="POST" action="/staff/verify-request/<%= request.request_id %>" style="display:inline;">
+                                    <input type="hidden" name="action" value="approve">
+                                    <button type="submit" class="btn" style="background: #16a34a; color: white; padding: 10px 20px; border-radius: 8px; font-size: 13.5px; font-weight: 700; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;"
+                                        onclick="return confirm('Approve this refund request?')">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+                                        Approve Request
+                                    </button>
+                                </form>
+
+                                <button class="btn" style="background: #dc2626; color: white; padding: 10px 20px; border-radius: 8px; font-size: 13.5px; font-weight: 700; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;"
+                                    onclick="showRejectModal('<%= request.request_id %>')">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                    Reject Request
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            <% } %>
         </div>
-    </div>
 
-    <script>
-        function showRejectModal(requestId) {
-            const modal = document.getElementById('rejectModal');
-            document.getElementById('rejectForm').action = '/staff/verify-request/' + requestId;
-            modal.classList.add('active');
-        }
+        <!-- Rejection Modal -->
+        <div id="rejectModal" class="modal">
+            <div class="modal-box">
+                <div class="modal-title">
+                    <span>Reject Refund Request</span>
+                    <span class="modal-close" onclick="closeRejectModal()">&times;</span>
+                </div>
+                <form id="rejectForm" method="POST" action="">
+                    <input type="hidden" name="action" value="reject">
+                    <label class="modal-label" for="rejection_reason">Reason for Rejection <span style="color:#e11d48">*</span></label>
+                    <textarea name="rejection_reason" id="rejection_reason" required
+                        placeholder="Please provide a clear reason for rejecting this refund request..."></textarea>
+                    <button type="submit" class="btn-submit-reject" style="background:#dc2626; color:white; font-weight:700;">Submit Rejection</button>
+                </form>
+            </div>
+        </div>
 
-        function closeRejectModal() {
-            document.getElementById('rejectModal').classList.remove('active');
-            document.getElementById('rejection_reason').value = '';
-        }
+        <script>
+            function showRejectModal(requestId) {
+                const modal = document.getElementById('rejectModal');
+                document.getElementById('rejectForm').action = '/staff/verify-request/' + requestId;
+                modal.classList.add('active');
+            }
 
-        window.addEventListener('click', function(e) {
-            const modal = document.getElementById('rejectModal');
-            if (e.target === modal) closeRejectModal();
-        });
-    </script>
+            function closeRejectModal() {
+                document.getElementById('rejectModal').classList.remove('active');
+                document.getElementById('rejection_reason').value = '';
+            }
 
-<%- include('partials/footer') %>
+            window.addEventListener('click', function(e) {
+                const modal = document.getElementById('rejectModal');
+                if (e.target === modal) closeRejectModal();
+            });
+        </script>
+
+        <%- include('partials/footer') %>
+    </main>
+</div>
