@@ -68,16 +68,18 @@ app.use((err, req, res, next) => {
     res.status(500).send('Something went wrong!');
 });
 
-// Run migrations then start server
+// Start HTTP server immediately (instant 0ms startup)
+app.listen(PORT, () => {
+    console.log(`\n⚡ NELFUND Refund Portal running on http://localhost:${PORT}`);
+});
+
+// Run database migration check in background
 migrate()
     .then(() => {
-        app.listen(PORT, () => {
-            console.log(`✓ Server running on http://localhost:${PORT}`);
-        });
+        console.log('✓ Database ready.');
     })
     .catch((err) => {
-        console.error('✗ Server failed to start due to migration error:', err.message);
-        process.exit(1);
+        console.warn('⚠ Database migration notice:', err.message);
     });
 
 // Catch unhandled promise rejections so the process never silently hangs

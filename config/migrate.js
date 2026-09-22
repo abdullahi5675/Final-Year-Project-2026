@@ -1,41 +1,34 @@
 const { pool } = require('./database');
 
 /**
- * NELFUND Refund Portal — Auto Migration
- * Runs on every server start.
- * Uses CREATE TABLE IF NOT EXISTS so it is safe to run repeatedly.
- * Default staff accounts are only inserted if they don't already exist.
- *
- * Staff Login Credentials (change passwords after first login!):
- *   Admin  → username: admin    password: admin123
- *   Staff  → username: staff1   password: staff123
+ * NELFUND Refund Portal — Fast Single-Query Auto Migration
+ * Runs on every server start in a single DB network round-trip.
+ * Uses CREATE TABLE IF NOT EXISTS and ON CONFLICT DO NOTHING.
  */
 
 async function migrate() {
+    const startTime = Date.now();
     const client = await pool.connect();
     try {
-        console.log('⏳ Running database migrations...');
+        console.log('⏳ Running database migration check...');
 
-        await client.query('BEGIN');
+        const migrationSql = `
+            BEGIN;
 
-        // ── 1. STAFF ──────────────────────────────────────────────────────────
-        await client.query(`
+            -- 1. STAFF
             CREATE TABLE IF NOT EXISTS staff (
                 staff_id       SERIAL PRIMARY KEY,
                 username       VARCHAR(50)  UNIQUE NOT NULL,
                 password_hash  VARCHAR(255) NOT NULL,
                 full_name      VARCHAR(100) NOT NULL,
                 email          VARCHAR(100),
-                role           VARCHAR(20)  DEFAULT 'staff'
-                               CHECK (role IN ('admin', 'staff')),
+                role           VARCHAR(20)  DEFAULT 'staff' CHECK (role IN ('admin', 'staff')),
                 is_active      BOOLEAN      DEFAULT TRUE,
                 created_at     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
                 last_login     TIMESTAMP    NULL
             );
-        `);
 
-        // ── 2. NELFUND APPROVED LISTS ─────────────────────────────────────────
-        await client.query(`
+            -- 2. NELFUND APPROVED LISTS
             CREATE TABLE IF NOT EXISTS nelfund_approved_lists (
                 list_id          SERIAL PRIMARY KEY,
                 batch_reference  VARCHAR(100) NOT NULL,
@@ -46,10 +39,8 @@ async function migrate() {
                 created_at       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (uploaded_by) REFERENCES staff(staff_id)
             );
-        `);
 
-        // ── 3. STUDENTS ───────────────────────────────────────────────────────
-        await client.query(`
+            -- 3. STUDENTS
             CREATE TABLE IF NOT EXISTS students (
                 reg_number  VARCHAR(50)  PRIMARY KEY,
                 full_name   VARCHAR(100) NOT NULL,
@@ -60,23 +51,15 @@ async function migrate() {
                 date_added  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (list_id) REFERENCES nelfund_approved_lists(list_id)
             );
-        `);
 
-        // ── 4. REFUND REQUESTS ────────────────────────────────────────────────
-        await client.query(`
+            -- 4. REFUND REQUESTS
             CREATE TABLE IF NOT EXISTS refund_requests (
                 request_id               SERIAL PRIMARY KEY,
                 reg_number               VARCHAR(50) NOT NULL,
                 paid_before_disbursement BOOLEAN     DEFAULT TRUE,
                 refund_amount            DECIMAL(10, 2),
-                payment_type             VARCHAR(50) NOT NULL
-                                         CHECK (payment_type IN (
-                                             'first_installment',
-                                             'second_installment',
-                                             'full_payment'
-                                         )),
-                status                   VARCHAR(20) DEFAULT 'pending'
-                                         CHECK (status IN ('pending', 'approved', 'rejected')),
+                payment_type             VARCHAR(50) NOT NULL CHECK (payment_type IN ('first_installment', 'second_installment', 'full_payment')),
+                status                   VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
                 rejection_reason         TEXT,
                 verified_by              INT,
                 submitted_at             TIMESTAMP   DEFAULT CURRENT_TIMESTAMP,
@@ -86,10 +69,8 @@ async function migrate() {
                 FOREIGN KEY (reg_number)   REFERENCES students(reg_number),
                 FOREIGN KEY (verified_by)  REFERENCES staff(staff_id)
             );
-        `);
 
-        // ── 5. REMITA DOCUMENTS ───────────────────────────────────────────────
-        await client.query(`
+            -- 5. REMITA DOCUMENTS
             CREATE TABLE IF NOT EXISTS remita_documents (
                 document_id   SERIAL PRIMARY KEY,
                 request_id    INT          NOT NULL,
@@ -99,13 +80,10 @@ async function migrate() {
                 payment_date  DATE,
                 remita_number VARCHAR(100),
                 uploaded_at   TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (request_id) REFERENCES refund_requests(request_id)
-                    ON DELETE CASCADE
+                FOREIGN KEY (request_id) REFERENCES refund_requests(request_id) ON DELETE CASCADE
             );
-        `);
 
-        // ── 6. BANK DETAILS ───────────────────────────────────────────────────
-        await client.query(`
+            -- 6. BANK DETAILS
             CREATE TABLE IF NOT EXISTS bank_details (
                 bank_id        SERIAL PRIMARY KEY,
                 request_id     INT          NOT NULL,
@@ -114,13 +92,10 @@ async function migrate() {
                 bank_name      VARCHAR(100) NOT NULL,
                 is_verified    BOOLEAN      DEFAULT FALSE,
                 created_at     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (request_id) REFERENCES refund_requests(request_id)
-                    ON DELETE CASCADE
+                FOREIGN KEY (request_id) REFERENCES refund_requests(request_id) ON DELETE CASCADE
             );
-        `);
 
-        // ── 7. REFUND BATCHES ─────────────────────────────────────────────────
-        await client.query(`
+            -- 7. REFUND BATCHES
             CREATE TABLE IF NOT EXISTS refund_batches (
                 batch_id       SERIAL PRIMARY KEY,
                 batch_number   VARCHAR(50)    UNIQUE NOT NULL,
@@ -134,10 +109,8 @@ async function migrate() {
                 FOREIGN KEY (created_by)    REFERENCES staff(staff_id),
                 FOREIGN KEY (downloaded_by) REFERENCES staff(staff_id)
             );
-        `);
 
-        // ── 8. BATCH FILES ────────────────────────────────────────────────────
-        await client.query(`
+            -- 8. BATCH FILES
             CREATE TABLE IF NOT EXISTS batch_files (
                 file_id      SERIAL PRIMARY KEY,
                 batch_id     INT          NOT NULL,
@@ -146,17 +119,14 @@ async function migrate() {
                 generated_at TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (batch_id) REFERENCES refund_batches(batch_id)
             );
-        `);
 
-        // ── 9. COMPLAINTS ─────────────────────────────────────────────────────
-        await client.query(`
+            -- 9. COMPLAINTS
             CREATE TABLE IF NOT EXISTS complaints (
                 complaint_id SERIAL PRIMARY KEY,
                 reg_number   VARCHAR(50)  NOT NULL,
                 subject      VARCHAR(255) NOT NULL,
                 message      TEXT         NOT NULL,
-                status       VARCHAR(20)  DEFAULT 'pending'
-                             CHECK (status IN ('pending', 'answered')),
+                status       VARCHAR(20)  DEFAULT 'pending' CHECK (status IN ('pending', 'answered')),
                 reply        TEXT,
                 replied_by   INT,
                 created_at   TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
@@ -164,10 +134,8 @@ async function migrate() {
                 FOREIGN KEY (reg_number) REFERENCES students(reg_number),
                 FOREIGN KEY (replied_by) REFERENCES staff(staff_id)
             );
-        `);
 
-        // ── 10. ACTIVITY LOGS ───────────────────────────────────────────────────
-        await client.query(`
+            -- 10. ACTIVITY LOGS
             CREATE TABLE IF NOT EXISTS activity_logs (
                 log_id       SERIAL PRIMARY KEY,
                 staff_id     INT REFERENCES staff(staff_id) ON DELETE SET NULL,
@@ -179,39 +147,19 @@ async function migrate() {
                 ip_address   VARCHAR(45),
                 created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-        `);
 
-        // ── 10b. Safely upgrade existing activity_logs tables (existing installs) ─
-        for (const stmt of [
-            `ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS reg_number   VARCHAR(50)  NULL`,
-            `ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS actor_type   VARCHAR(10)  DEFAULT 'staff'`,
-            `ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS student_name VARCHAR(100) NULL`
-        ]) {
-            try { await client.query(stmt); } catch (_) { /* column already exists */ }
-        }
+            ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS reg_number   VARCHAR(50)  NULL;
+            ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS actor_type   VARCHAR(10)  DEFAULT 'staff';
+            ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS student_name VARCHAR(100) NULL;
 
-        // ── 11. INDEXES (safe — ignored if already exist) ─────────────────────
-        await client.query(`
+            -- 11. INDEXES
             CREATE INDEX IF NOT EXISTS idx_student_list     ON students(list_id);
             CREATE INDEX IF NOT EXISTS idx_request_status   ON refund_requests(status);
             CREATE INDEX IF NOT EXISTS idx_request_reg      ON refund_requests(reg_number);
             CREATE INDEX IF NOT EXISTS idx_activity_staff   ON activity_logs(staff_id);
             CREATE INDEX IF NOT EXISTS idx_activity_student ON activity_logs(reg_number);
-        `);
 
-        await client.query('COMMIT');
-        console.log('✓ All tables are ready.');
-
-        // ── 11. SEED DEFAULT STAFF (only if not already present) ──────────────
-        //
-        //  Credentials:
-        //    Admin  → username: admin    | password: admin123
-        //    Staff  → username: staff1   | password: staff123
-        //
-        //  Hashes were generated with bcrypt (saltRounds = 10).
-        //  Change passwords immediately after your first login!
-
-        await pool.query(`
+            -- 12. DEFAULT STAFF SEEDS
             INSERT INTO staff (username, password_hash, full_name, email, role)
             VALUES (
                 'admin',
@@ -219,11 +167,8 @@ async function migrate() {
                 'Administrator',
                 'admin@nelfund.edu',
                 'admin'
-            )
-            ON CONFLICT (username) DO NOTHING;
-        `);
+            ) ON CONFLICT (username) DO NOTHING;
 
-        await pool.query(`
             INSERT INTO staff (username, password_hash, full_name, email, role)
             VALUES (
                 'staff1',
@@ -231,21 +176,18 @@ async function migrate() {
                 'Staff Member',
                 'staff@nelfund.edu',
                 'staff'
-            )
-            ON CONFLICT (username) DO NOTHING;
-        `);
+            ) ON CONFLICT (username) DO NOTHING;
 
-        console.log('✓ Default staff credentials seeded (skipped if already exist).');
-        console.log('  ┌─────────────────────────────────────────┐');
-        console.log('  │  Login Credentials                      │');
-        console.log('  │  Admin : username=admin  pw=admin123    │');
-        console.log('  │  Staff : username=staff1 pw=staff123    │');
-        console.log('  └─────────────────────────────────────────┘');
+            COMMIT;
+        `;
 
+        await client.query(migrationSql);
+        const duration = Date.now() - startTime;
+        console.log(`⚡ Database migration ready (${duration}ms).`);
     } catch (err) {
         await client.query('ROLLBACK').catch(() => {});
         console.error('✗ Migration failed:', err.message);
-        throw err;  // let server.js handle it
+        throw err;
     } finally {
         client.release();
     }

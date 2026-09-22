@@ -30,7 +30,7 @@
         <div class="alert alert-error"><%= error %></div>
     <% } %>
 
-    <form method="POST" action="/login">
+    <form method="POST" action="/login" onsubmit="handleLoginSubmit(this)">
         <div class="form-group">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                 <label for="reg_number" style="margin-bottom: 0;">Registration Number</label>
@@ -38,7 +38,7 @@
             </div>
             <input type="text" id="reg_number" name="reg_number" required placeholder="e.g. FUTB/CST/22/1001" autofocus>
         </div>
-        <button type="submit" class="btn-submit">Login to Student Portal &rarr;</button>
+        <button type="submit" class="btn-submit" id="loginSubmitBtn">Login to Student Portal &rarr;</button>
     </form>
 
     <div class="footer-note">
@@ -78,6 +78,15 @@
     }
     function closeForgotModal() {
         document.getElementById('forgotModal').classList.remove('active');
+    }
+    function handleLoginSubmit(form) {
+        var btn = document.getElementById('loginSubmitBtn');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Processing Login...';
+            btn.style.opacity = '0.75';
+            btn.style.cursor = 'not-allowed';
+        }
     }
 </script>
 

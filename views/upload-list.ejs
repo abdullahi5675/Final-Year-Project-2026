@@ -1,5 +1,12 @@
 <%- include('partials/header', { title: 'NELFUND — Upload Student List' }) %>
 
+<!-- Upload Processing Overlay -->
+<div class="loading-overlay" id="uploadOverlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text" style="margin-top:16px; font-weight:700; font-size:18px; color:#152c5b;">Processing &amp; Uploading Excel File…</div>
+    <div class="loading-sub" style="margin-top:6px; color:#64748b; font-size:14px;">Parsing student records and inserting into database. Please do not close this window.</div>
+</div>
+
 <div class="app-wrapper" id="appWrapper">
     <%- include('partials/sidebar-staff', { staff, activePage: 'upload' }) %>
 
@@ -39,7 +46,7 @@
 
                 <!-- Form Card -->
                 <div style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 28px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);">
-                    <form action="/staff/upload-list" method="POST" enctype="multipart/form-data">
+                    <form action="/staff/upload-list" method="POST" enctype="multipart/form-data" onsubmit="handleUploadSubmit(this)">
                         <div class="form-group" style="margin-bottom: 20px;">
                             <label for="batch_reference" style="display:block; font-weight:600; font-size:14px; color:#1e293b; margin-bottom:6px;">Batch Reference / File Identifier <span style="color:#e11d48">*</span></label>
                             <input type="text" name="batch_reference" id="batch_reference" required placeholder="e.g. NELFUND-2024-BATCH-01" style="width:100%; padding:10px 14px; border-radius:6px; border:1px solid #cbd5e1; font-size:14px;">
@@ -51,9 +58,9 @@
                             <input type="file" name="nelfund_file" id="nelfund_file" accept=".xlsx,.xls" required style="width:100%; padding:10px; border-radius:6px; border:1px solid #cbd5e1; font-size:14px; background:#f8fafc;">
                         </div>
 
-                        <button type="submit" class="btn" style="width:100%; padding:12px; font-size:15px; font-weight:700; background:#152c5b; color:white; border:none; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:8px;">
+                        <button type="submit" id="uploadBtn" class="btn" style="width:100%; padding:12px; font-size:15px; font-weight:700; background:#152c5b; color:white; border:none; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:8px;">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
-                            Process & Upload List
+                            Process &amp; Upload List
                         </button>
                     </form>
                 </div>
@@ -63,3 +70,62 @@
         <%- include('partials/footer') %>
     </main>
 </div>
+
+<% if (typeof duplicateWarning !== 'undefined' && duplicateWarning) { %>
+<!-- Duplicate Warning Confirmation Modal -->
+<div class="modal active" id="duplicateModal" style="display: flex; z-index: 10000; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(4px);">
+    <div class="modal-box" style="max-width: 520px; border-radius: 14px; padding: 28px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center;">
+        <div style="width: 56px; height: 56px; background: #fff7ed; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; border: 2px solid #fed7aa;">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+        </div>
+
+        <h3 style="color: #1e293b; font-size: 20px; font-weight: 700; margin-bottom: 10px;">
+            ⚠️ Duplicate NELFUND List Detected
+        </h3>
+
+        <div style="background: #fff7ed; border: 1px solid #ffedd5; border-left: 4px solid #ea580c; border-radius: 8px; padding: 14px 16px; margin-bottom: 18px; text-align: left; font-size: 13.5px; color: #9a3412; line-height: 1.6;">
+            A list matching batch reference <strong>'<%= duplicateWarning.batchReference %>'</strong> was previously uploaded on <strong><%= duplicateWarning.uploadDate %></strong> by:
+            <div style="margin-top: 6px; font-weight: 700; color: #7c2d12; font-size: 14px;">
+                👤 <%= duplicateWarning.uploaderName %> (<%= duplicateWarning.uploaderRole %>) <%= duplicateWarning.uploaderEmail ? '— ' + duplicateWarning.uploaderEmail : '' %>
+            </div>
+        </div>
+
+        <div style="text-align: left; font-size: 13.5px; color: #475569; line-height: 1.6; margin-bottom: 22px; background: #f8fafc; padding: 14px; border-radius: 8px; border: 1px solid #e2e8f0;">
+            <strong style="color: #1e293b; display: block; margin-bottom: 4px;">What happens if you continue?</strong>
+            • Student records will be updated and merged.<br>
+            • All student refund requests, bank details, uploaded documents, and activity logs remain <strong>100% intact and visible</strong> in accounts.
+        </div>
+
+        <form action="/staff/upload-list" method="POST" onsubmit="handleUploadSubmit(this)">
+            <input type="hidden" name="batch_reference" value="<%= duplicateWarning.batchReference %>">
+            <input type="hidden" name="confirm_overwrite" value="true">
+            <input type="hidden" name="temp_file_path" value="<%= duplicateWarning.tempFilePath %>">
+            
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button type="submit" id="confirmOverwriteBtn" class="btn" style="width: 100%; padding: 12px; font-size: 14px; font-weight: 700; background: #152c5b; color: white; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    ✅ YES — Continue &amp; Update List
+                </button>
+                <a href="/staff/upload-list" class="btn" style="width: 100%; padding: 11px; font-size: 13.5px; font-weight: 600; background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; border-radius: 8px; text-decoration: none; text-align: center; box-sizing: border-box;">
+                    ❌ NO — Cancel &amp; Choose Another List
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+<% } %>
+
+<script>
+    function handleUploadSubmit(form) {
+        var btn = document.getElementById('uploadBtn') || document.getElementById('confirmOverwriteBtn');
+        var overlay = document.getElementById('uploadOverlay');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Processing & Uploading...';
+            btn.style.opacity = '0.75';
+            btn.style.cursor = 'not-allowed';
+        }
+        if (overlay) {
+            overlay.classList.add('active');
+        }
+    }
+</script>

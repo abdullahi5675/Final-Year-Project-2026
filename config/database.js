@@ -8,12 +8,12 @@ const poolConfig = process.env.DATABASE_URL
     ? {
         connectionString: process.env.DATABASE_URL,
         ssl: {
-            rejectUnauthorized: false  // Required for Render's managed PostgreSQL
+            rejectUnauthorized: false
         },
         max: 10,
-        idleTimeoutMillis: 60000,
-        connectionTimeoutMillis: 10000,
-        query_timeout: 30000,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 3000,
+        query_timeout: 15000,
     }
     : {
         host: process.env.DB_HOST,
@@ -22,9 +22,9 @@ const poolConfig = process.env.DATABASE_URL
         database: process.env.DB_NAME,
         port: process.env.DB_PORT || 5432,
         max: 10,
-        idleTimeoutMillis: 60000,
-        connectionTimeoutMillis: 10000,
-        query_timeout: 30000,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 3000,
+        query_timeout: 15000,
     };
 
 const pool = new Pool(poolConfig);
@@ -93,42 +93,19 @@ const getConnection = async () => {
     return client;
 };
 
-// Test connection with retry logic
-async function testConnection(retries = 5, delay = 2000) {
-    for (let attempt = 1; attempt <= retries; attempt++) {
-        try {
-            await pool.query('SELECT NOW()');
-            console.log('✓ Database connected successfully to PostgreSQL');
+// Fast non-blocking test connection
+async function testConnection() {
+    try {
+        await pool.query('SELECT 1');
+        console.log('✓ Database connected to PostgreSQL');
 
-            // Pre-warm the pool: create 3 idle connections so first requests are fast
-            const warmClients = [];
-            try {
-                for (let i = 0; i < 3; i++) {
-                    warmClients.push(await pool.connect());
-                }
-                console.log('✓ Connection pool pre-warmed (3 connections ready)');
-            } catch (wErr) {
-                console.warn('⚠ Pool pre-warm partial failure:', wErr.message);
-            } finally {
-                warmClients.forEach(c => c.release());
-            }
-
-            // Keep-alive: ping every 4 minutes so idle connections stay open
-            setInterval(async () => {
-                try { await pool.query('SELECT 1'); }
-                catch (e) { console.warn('⚠ Keep-alive ping failed:', e.message); }
-            }, 4 * 60 * 1000);
-
-            return;
-        } catch (err) {
-            if (attempt < retries) {
-                console.warn(`⚠ DB connection attempt ${attempt}/${retries} failed: ${err.message}. Retrying in ${delay / 1000}s...`);
-                await new Promise(resolve => setTimeout(resolve, delay));
-            } else {
-                console.error('✗ Could not connect to PostgreSQL after', retries, 'attempts:', err.message);
-                console.error('  → Make sure PostgreSQL is running and your .env DB_* settings are correct.');
-            }
-        }
+        // Keep-alive: ping every 4 minutes to keep idle connections active
+        setInterval(async () => {
+            try { await pool.query('SELECT 1'); }
+            catch (e) { /* ignore ping error */ }
+        }, 4 * 60 * 1000);
+    } catch (err) {
+        console.warn('⚠ Initial DB ping:', err.message);
     }
 }
 

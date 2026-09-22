@@ -7,60 +7,85 @@
         color: #8b1a27; border: 1px solid #f5c6cb;
     }
 
-    /* ── Searchable Bank Combobox ── */
-    .bank-combo { position: relative; }
+    /* ── Searchable Bank Field ── */
+    .bank-select-container { position: relative; width: 100%; }
 
-    .bank-combo-trigger {
-        display: flex; align-items: center; justify-content: space-between;
-        width: 100%; padding: 10px 14px; font-size: 14px; font-family: inherit;
-        border: 1.5px solid #d1d5db; border-radius: 8px; background: white;
-        cursor: pointer; box-sizing: border-box; color: #374151;
-        transition: border-color .2s, box-shadow .2s; text-align: left;
-        min-height: 44px;
+    .bank-input-wrap {
+        position: relative; display: flex; align-items: center; width: 100%;
     }
-    .bank-combo-trigger:focus { outline: none; border-color: #152c5b; box-shadow: 0 0 0 3px rgba(21,44,91,0.1); }
-    .bank-combo-trigger.invalid { border-color: #e53e3e !important; background: #fff5f5; }
-    .bank-combo-trigger.valid   { border-color: #38a169; }
-    .bank-combo-trigger .placeholder { color: #9ca3af; }
-    .bank-combo-trigger .selected-text { color: #111827; font-weight: 500; }
-    .bank-combo-arrow { font-size: 12px; color: #9ca3af; transition: transform .2s; flex-shrink: 0; margin-left: 8px; }
-    .bank-combo.open .bank-combo-arrow { transform: rotate(180deg); }
 
-    .bank-combo-dropdown {
-        display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0;
-        z-index: 1000; background: white; border: 1.5px solid #e2e8f0;
-        border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.13);
-        overflow: hidden; flex-direction: column;
-    }
-    .bank-combo.open .bank-combo-dropdown { display: flex; }
-
-    .bank-search-wrap {
-        padding: 10px; border-bottom: 1px solid #f1f5f9; background: #f8fafc;
-    }
     .bank-search-input {
-        width: 100%; padding: 9px 12px 9px 36px; border: 1.5px solid #e2e8f0;
-        border-radius: 7px; font-size: 13.5px; outline: none; box-sizing: border-box;
-        background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E") no-repeat 10px center;
+        width: 100%; padding: 11px 40px 11px 14px; font-size: 14px; font-family: inherit;
+        border: 1.5px solid #d1d5db; border-radius: 8px; background: #ffffff;
+        color: #111827; outline: none; transition: border-color .2s, box-shadow .2s;
+        box-sizing: border-box; min-height: 44px;
     }
-    .bank-search-input:focus { border-color: #152c5b; }
+    .bank-search-input:focus { border-color: #152c5b; box-shadow: 0 0 0 3px rgba(21,44,91,0.1); }
+    .bank-search-input.invalid { border-color: #e53e3e !important; background: #fff5f5; }
+    .bank-search-input.valid   { border-color: #38a169; }
 
-    .bank-list-wrap { overflow-y: auto; max-height: 220px; }
-    .bank-option {
-        padding: 10px 16px; font-size: 13.5px; cursor: pointer;
-        color: #1e293b; border-bottom: 1px solid #f8fafc; transition: background .12s;
+    .bank-dropdown-arrow {
+        position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+        font-size: 11px; color: #9ca3af; pointer-events: none; transition: transform .2s;
     }
-    .bank-option:hover, .bank-option.kb-focus { background: #eff6ff; color: #152c5b; }
-    .bank-option.is-selected { background: #152c5b; color: #fff; font-weight: 600; }
-    .bank-empty { padding: 18px; text-align: center; color: #94a3b8; font-size: 13px; }
+    .bank-select-container.open .bank-dropdown-arrow { transform: translateY(-50%) rotate(180deg); color: #152c5b; }
 
     .bank-clear-btn {
-        display: none; position: absolute; right: 36px; top: 50%;
-        transform: translateY(-50%); cursor: pointer; color: #9ca3af;
-        font-size: 16px; line-height: 1; padding: 2px 4px;
-        transition: color .15s;
+        display: none; position: absolute; right: 34px; top: 50%; transform: translateY(-50%);
+        background: #e2e8f0; border: none; border-radius: 50%; width: 20px; height: 20px;
+        font-size: 12px; line-height: 20px; text-align: center; color: #64748b; cursor: pointer;
+        transition: background .15s, color .15s; padding: 0;
     }
-    .bank-clear-btn:hover { color: #e53e3e; }
+    .bank-clear-btn:hover { background: #cbd5e1; color: #1e293b; }
     .bank-clear-btn.visible { display: block; }
+
+    .bank-dropdown-panel {
+        display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+        z-index: 9999; background: #ffffff; border: 1.5px solid #94a3b8;
+        border-radius: 10px; box-shadow: 0 12px 36px rgba(0,0,0,0.18);
+        max-height: 380px; overflow-y: scroll;
+        scrollbar-width: thin;
+        scrollbar-color: #64748b #f1f5f9;
+    }
+    .bank-dropdown-panel::-webkit-scrollbar {
+        width: 10px;
+    }
+    .bank-dropdown-panel::-webkit-scrollbar-track {
+        background: #f1f5f9;
+        border-radius: 0 8px 8px 0;
+    }
+    .bank-dropdown-panel::-webkit-scrollbar-thumb {
+        background: #64748b;
+        border-radius: 5px;
+        border: 2px solid #f1f5f9;
+    }
+    .bank-dropdown-panel::-webkit-scrollbar-thumb:hover {
+        background: #152c5b;
+    }
+    .bank-select-container.open .bank-dropdown-panel { display: block; }
+
+    /* Support upward dropdown when near bottom of viewport */
+    .bank-select-container.drop-up .bank-dropdown-panel {
+        top: auto; bottom: calc(100% + 6px);
+        box-shadow: 0 -12px 36px rgba(0,0,0,0.18);
+    }
+
+    .bank-card-expanded {
+        padding-bottom: 220px !important;
+        transition: padding-bottom .25s ease;
+    }
+
+    .bank-option-item {
+        padding: 11px 16px; font-size: 14px; color: #1e293b; cursor: pointer;
+        border-bottom: 1px solid #f1f5f9; transition: background .12s, color .12s;
+    }
+    .bank-option-item:last-child { border-bottom: none; }
+    .bank-option-item:hover, .bank-option-item.kb-active { background: #eff6ff; color: #152c5b; font-weight: 600; }
+    .bank-option-item.selected { background: #152c5b; color: #ffffff; font-weight: 600; }
+
+    .bank-no-match {
+        padding: 20px; text-align: center; color: #94a3b8; font-size: 13.5px;
+    }
 </style>
 ` }) %>
 
@@ -138,7 +163,7 @@
         </div>
 
         <!-- Section 2: Bank Account Details -->
-        <div class="form-card">
+        <div class="form-card" id="bankDetailsCard">
             <div class="form-section-header">Section 2 — Bank Account Details</div>
             <div class="form-section-body">
 
@@ -162,39 +187,31 @@
                     </div>
                 </div>
 
-                <!-- Searchable Bank Combobox -->
+                <!-- Searchable Bank Select Field -->
                 <div class="form-row single">
                     <div class="form-group">
-                        <label>Bank Name <span style="color:#c0392b">*</span></label>
+                        <label for="bank_search_input">Bank Name <span style="color:#c0392b">*</span></label>
 
-                        <!-- Hidden real input that gets submitted with the form -->
+                        <!-- Hidden input submitted with the form -->
                         <input type="hidden" name="bank_name" id="bank_name_hidden">
 
-                        <div class="bank-combo" id="bankCombo">
-                            <!-- Trigger button (what the user sees / clicks) -->
-                            <button type="button" class="bank-combo-trigger" id="bankTrigger"
-                                    aria-haspopup="listbox" aria-expanded="false">
-                                <span id="bankLabel" class="placeholder">— Click to search and select your bank —</span>
-                                <span class="bank-combo-arrow">&#9660;</span>
-                            </button>
+                        <div class="bank-select-container" id="bankSelectContainer">
+                            <div class="bank-input-wrap">
+                                <input type="text"
+                                       id="bank_search_input"
+                                       class="bank-search-input"
+                                       placeholder="Search and select your bank (e.g. Access Bank, GTBank, Kuda)..."
+                                       autocomplete="off" spellcheck="false">
+                                <span class="bank-dropdown-arrow">&#9660;</span>
+                                <button type="button" class="bank-clear-btn" id="bankClearBtn" title="Clear selection">&times;</button>
+                            </div>
 
-                            <!-- Clear selection button -->
-                            <span class="bank-clear-btn" id="bankClearBtn" title="Clear selection">&#x2715;</span>
-
-                            <!-- Dropdown panel -->
-                            <div class="bank-combo-dropdown" id="bankDropdown" role="listbox">
-                                <div class="bank-search-wrap">
-                                    <input type="text" class="bank-search-input" id="bankSearchInput"
-                                           placeholder="Type to search your bank…"
-                                           autocomplete="off" spellcheck="false">
-                                </div>
-                                <div class="bank-list-wrap" id="bankListWrap">
-                                    <div class="bank-empty">Loading banks…</div>
-                                </div>
+                            <div class="bank-dropdown-panel" id="bankDropdownPanel">
+                                <div class="bank-options-list" id="bankOptionsList"></div>
                             </div>
                         </div>
 
-                        <div class="field-hint">Type part of your bank name to filter the list</div>
+                        <div class="field-hint">Click or type to filter and select your bank</div>
                         <div class="field-error" id="bank_name_error">Please select your bank from the list.</div>
                     </div>
                 </div>
@@ -225,173 +242,211 @@
    SEARCHABLE BANK COMBOBOX  —  100% Vanilla JS, Zero CDN/jQuery
    ================================================================ */
 (function () {
-    var allBanks   = [];      // full sorted list after JSON load
-    var selected   = '';      // currently selected bank name
-    var kbIdx      = -1;      // keyboard-focused option index
+    var DEFAULT_BANKS = [
+        "ACCESS BANK", "ACCESSMONEY", "ACCION MFB", "ALERT MFB", "ALHAYAT MFB", "AMJU MFB",
+        "ASOSAVINGS", "ATBU Microfinance Bank", "BAYERO MICROFINANCE BANK", "BOCTRUST MICROFINANCE BANK",
+        "CARBON", "CELLULANT", "CITI BANK", "CORONATION", "COVENANT MFB", "CROWDFORCE",
+        "ECOBANK NIGERIA", "EDFIN MFB", "EKONDO MICROFINANCE BANK", "EYOWO", "FBNQUEST MERCHANT BANK",
+        "FCMB", "FIDELITY BANK", "FIRST BANK OF NIGERIA", "FIRST CITY MONUMENT BANK", "FLUTTERWAVE",
+        "GLOBUS BANK", "GTBANK", "HASAL MICROFINANCE BANK", "HERITAGE BANK", "JAIZ BANK",
+        "KUDA BANK", "LOTUS BANK", "MONIEPOINT MICROFINANCE BANK", "MUTUAL TRUST MICROFINANCE BANK",
+        "NPF MICROFINANCE BANK", "ONE FINANCE", "OPAY", "OPTIMUS BANK", "PALMPAY",
+        "PARALLEX BANK", "POLARIS BANK", "PREMIUM TRUST BANK", "PROVIDUS BANK", "RUBIES MFB",
+        "SAFE HAVEN MFB", "SIGNATURE BANK", "STANBIC IBTC BANK", "STANDARD CHARTERED BANK",
+        "STERLING BANK", "SUNTRUST BANK", "TAJ BANK", "TITAN TRUST BANK", "UNION BANK OF NIGERIA",
+        "UNITED BANK FOR AFRICA", "UNITY BANK", "VFD MICROFINANCE BANK", "WEMA BANK", "ZENITH BANK"
+    ];
 
-    var combo      = document.getElementById('bankCombo');
-    var trigger    = document.getElementById('bankTrigger');
-    var label      = document.getElementById('bankLabel');
-    var hidden     = document.getElementById('bank_name_hidden');
-    var dropdown   = document.getElementById('bankDropdown');
-    var searchInp  = document.getElementById('bankSearchInput');
-    var listWrap   = document.getElementById('bankListWrap');
-    var clearBtn   = document.getElementById('bankClearBtn');
-    var bankErr    = document.getElementById('bank_name_error');
+    var bankList = DEFAULT_BANKS;
+    var container = document.getElementById('bankSelectContainer');
+    var input = document.getElementById('bank_search_input');
+    var hidden = document.getElementById('bank_name_hidden');
+    var dropdown = document.getElementById('bankDropdownPanel');
+    var listEl = document.getElementById('bankOptionsList');
+    var clearBtn = document.getElementById('bankClearBtn');
+    var errEl = document.getElementById('bank_name_error');
+    var kbIndex = -1;
 
-    /* -- Load banks from local JSON --------------------------------- */
+    // Load full list asynchronously from /data/banks.json if accessible
     fetch('/data/banks.json')
         .then(function (r) { return r.json(); })
         .then(function (data) {
-            allBanks = Object.keys(data).sort().map(function (n) {
-                return { name: n, code: data[n] };
-            });
-            renderOptions(allBanks);
+            var names = Object.keys(data).sort();
+            if (names.length > 0) {
+                bankList = names;
+                if (container && container.classList.contains('open')) {
+                    renderList(filterBanks(input.value));
+                }
+            }
         })
-        .catch(function () {
-            listWrap.innerHTML = '<div class="bank-empty">⚠️ Could not load bank list. Please refresh the page.</div>';
-        });
+        .catch(function () {});
 
-    /* -- Render filtered option list -------------------------------- */
-    function renderOptions(banks) {
-        if (banks.length === 0) {
-            listWrap.innerHTML = '<div class="bank-empty">No banks match your search.</div>';
-            kbIdx = -1;
-            return;
-        }
-        listWrap.innerHTML = banks.map(function (b, i) {
-            var cls = 'bank-option' + (b.name === selected ? ' is-selected' : '');
-            return '<div class="' + cls + '" data-name="' + escHtml(b.name) + '" data-i="' + i + '">' + escHtml(b.name) + '</div>';
-        }).join('');
-        kbIdx = -1;
+    function filterBanks(query) {
+        var q = (query || '').trim().toLowerCase();
+        if (!q) return bankList;
+        return bankList.filter(function (b) {
+            return b.toLowerCase().indexOf(q) !== -1;
+        });
     }
 
-    /* -- Open / close ---------------------------------------------- */
+    function renderList(items) {
+        listEl.innerHTML = '';
+        kbIndex = -1;
+
+        if (items.length === 0) {
+            listEl.innerHTML = '<div class="bank-no-match">No banks match your search.</div>';
+            return;
+        }
+
+        var html = '';
+        for (var i = 0; i < items.length; i++) {
+            var b = items[i];
+            var isSel = hidden.value === b;
+            var cls = 'bank-option-item' + (isSel ? ' selected' : '');
+            html += '<div class="' + cls + '" data-bank="' + escapeHtml(b) + '">' + escapeHtml(b) + '</div>';
+        }
+        listEl.innerHTML = html;
+    }
+
+    var bankCard = document.getElementById('bankDetailsCard');
+
     function openDropdown() {
-        combo.classList.add('open');
-        trigger.setAttribute('aria-expanded', 'true');
-        searchInp.value = '';
-        renderOptions(allBanks);
-        kbIdx = -1;
-        setTimeout(function () { searchInp.focus(); }, 40);
+        var rect = input.getBoundingClientRect();
+        var spaceBelow = window.innerHeight - rect.bottom;
+        var spaceAbove = rect.top;
+
+        // If less than 380px below and more space above, flip dropdown UPWARDS
+        if (spaceBelow < 380 && spaceAbove > spaceBelow) {
+            container.classList.add('drop-up');
+            if (bankCard) bankCard.classList.remove('bank-card-expanded');
+        } else {
+            container.classList.remove('drop-up');
+            if (bankCard) bankCard.classList.add('bank-card-expanded');
+        }
+
+        container.classList.add('open');
+        renderList(filterBanks(input.value));
     }
 
     function closeDropdown() {
-        combo.classList.remove('open');
-        trigger.setAttribute('aria-expanded', 'false');
+        container.classList.remove('open', 'drop-up');
+        if (bankCard) bankCard.classList.remove('bank-card-expanded');
+        kbIndex = -1;
     }
 
-    /* -- Select a bank --------------------------------------------- */
-    function pickBank(name) {
-        selected       = name;
-        hidden.value   = name;
-        label.textContent = name;
-        label.className   = 'selected-text';
-        trigger.classList.add('valid');
-        trigger.classList.remove('invalid');
-        bankErr.style.display = 'none';
+    function selectBank(name) {
+        input.value = name;
+        hidden.value = name;
+        input.classList.add('valid');
+        input.classList.remove('invalid');
+        errEl.style.display = 'none';
         clearBtn.classList.add('visible');
+        closeDropdown();
     }
 
-    /* -- Clear selection ------------------------------------------- */
-    function clearBank() {
-        selected       = '';
-        hidden.value   = '';
-        label.textContent = '— Click to search and select your bank —';
-        label.className   = 'placeholder';
-        trigger.classList.remove('valid', 'invalid');
-        bankErr.style.display = 'none';
+    function clearSelection() {
+        input.value = '';
+        hidden.value = '';
+        input.classList.remove('valid', 'invalid');
         clearBtn.classList.remove('visible');
-        searchInp.value = '';
-        renderOptions(allBanks);
+        errEl.style.display = 'none';
+        if (container.classList.contains('open')) renderList(bankList);
     }
 
-    /* -- Keyboard focus highlight ---------------------------------- */
-    function highlightKb() {
-        var opts = listWrap.querySelectorAll('.bank-option');
-        opts.forEach(function (o, i) {
-            if (i === kbIdx) {
-                o.classList.add('kb-focus');
-                o.scrollIntoView({ block: 'nearest' });
+    function escapeHtml(str) {
+        return (str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // Input events
+    input.addEventListener('focus', openDropdown);
+    input.addEventListener('click', openDropdown);
+
+    input.addEventListener('input', function () {
+        var q = this.value;
+        if (!q) {
+            hidden.value = '';
+            clearBtn.classList.remove('visible');
+            input.classList.remove('valid', 'invalid');
+        } else {
+            clearBtn.classList.add('visible');
+            var exact = bankList.find(function (b) { return b.toLowerCase() === q.trim().toLowerCase(); });
+            if (exact) {
+                hidden.value = exact;
+                input.classList.add('valid');
+                input.classList.remove('invalid');
+                errEl.style.display = 'none';
             } else {
-                o.classList.remove('kb-focus');
+                hidden.value = '';
             }
-        });
-    }
-
-    /* -- HTML escape helper ---------------------------------------- */
-    function escHtml(s) {
-        return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    }
-
-    /* ---- Events -------------------------------------------------- */
-
-    // Toggle dropdown on trigger click
-    trigger.addEventListener('click', function () {
-        combo.classList.contains('open') ? closeDropdown() : openDropdown();
+        }
+        openDropdown();
     });
 
-    // Clear button
     clearBtn.addEventListener('mousedown', function (e) {
         e.preventDefault();
-        clearBank();
-        trigger.focus();
+        clearSelection();
+        input.focus();
     });
 
-    // Filter as user types
-    searchInp.addEventListener('input', function () {
-        var q = this.value.trim().toLowerCase();
-        var filtered = q
-            ? allBanks.filter(function (b) { return b.name.toLowerCase().includes(q); })
-            : allBanks;
-        renderOptions(filtered);
+    listEl.addEventListener('mousedown', function (e) {
+        var item = e.target.closest('.bank-option-item');
+        if (item) {
+            e.preventDefault();
+            var name = item.getAttribute('data-bank');
+            if (name) selectBank(name);
+        }
     });
 
-    // Keyboard navigation inside search box
-    searchInp.addEventListener('keydown', function (e) {
-        var opts = listWrap.querySelectorAll('.bank-option');
+    // Keyboard navigation
+    input.addEventListener('keydown', function (e) {
+        var items = listEl.querySelectorAll('.bank-option-item');
+        if (!items.length) return;
+
         if (e.key === 'ArrowDown') {
             e.preventDefault();
-            kbIdx = Math.min(kbIdx + 1, opts.length - 1);
-            highlightKb();
+            if (!container.classList.contains('open')) openDropdown();
+            kbIndex = Math.min(kbIndex + 1, items.length - 1);
+            updateKbActive(items);
         } else if (e.key === 'ArrowUp') {
             e.preventDefault();
-            kbIdx = Math.max(kbIdx - 1, 0);
-            highlightKb();
+            kbIndex = Math.max(kbIndex - 1, 0);
+            updateKbActive(items);
         } else if (e.key === 'Enter') {
-            e.preventDefault();
-            if (kbIdx >= 0 && opts[kbIdx]) {
-                pickBank(opts[kbIdx].getAttribute('data-name'));
-                closeDropdown();
-                trigger.focus();
+            if (container.classList.contains('open') && kbIndex >= 0 && items[kbIndex]) {
+                e.preventDefault();
+                var name = items[kbIndex].getAttribute('data-bank');
+                if (name) selectBank(name);
             }
         } else if (e.key === 'Escape') {
             closeDropdown();
-            trigger.focus();
         }
     });
 
-    // Click on option
-    listWrap.addEventListener('mousedown', function (e) {
-        var opt = e.target.closest('.bank-option');
-        if (opt) {
-            e.preventDefault();
-            pickBank(opt.getAttribute('data-name'));
-            closeDropdown();
-            trigger.focus();
+    function updateKbActive(items) {
+        for (var i = 0; i < items.length; i++) {
+            if (i === kbIndex) {
+                items[i].classList.add('kb-active');
+                items[i].scrollIntoView({ block: 'nearest' });
+            } else {
+                items[i].classList.remove('kb-active');
+            }
         }
-    });
+    }
 
-    // Close when clicking outside
     document.addEventListener('mousedown', function (e) {
-        if (!combo.contains(e.target)) closeDropdown();
+        if (!container.contains(e.target)) {
+            closeDropdown();
+        }
     });
 
-    // Public validation called by form submit handler
     window._validateBank = function () {
+        if (input.value && !hidden.value) {
+            var match = bankList.find(function (b) { return b.toLowerCase() === input.value.trim().toLowerCase(); });
+            if (match) selectBank(match);
+        }
         if (!hidden.value) {
-            trigger.classList.add('invalid');
-            bankErr.style.display = 'block';
+            input.classList.add('invalid');
+            errEl.style.display = 'block';
             return false;
         }
         return true;

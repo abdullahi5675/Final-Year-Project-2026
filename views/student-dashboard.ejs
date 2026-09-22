@@ -85,23 +85,100 @@
 
         <!-- CTA -->
         <% if (!existingRequest) { %>
-        <div class="card-padded">
+        <div class="card-padded" id="refundCtaCard">
             <div class="card-header" style="margin: -24px -24px 20px; border-radius: 10px 10px 0 0;">Apply for NELFUND Refund</div>
-            <div class="cta-section">
-                <p>
+            <div class="cta-section" id="ctaSection">
+                <p id="ctaText">
                     Did you pay your school fees before NELFUND disbursed your loan?<br>
                     If yes, you are eligible to apply for a refund.
                 </p>
-                <div class="cta-actions">
-                    <a href="/student/refund-request" class="btn btn-primary">Yes — Apply for Refund</a>
-                    <button class="btn btn-secondary"
-                        onclick="alert('You are not eligible for a refund because you did not pay before NELFUND disbursed your loan.')">
+                <div class="cta-actions" id="ctaActions">
+                    <a href="/student/refund-request" class="btn btn-primary" id="btnApplyYes">Yes — Apply for Refund</a>
+                    <button class="btn btn-secondary" id="btnNoPay" onclick="triggerIneligibleLock()">
                         No, I Did Not Pay
                     </button>
+                </div>
+                <div id="lockedNotice" style="display: none; margin-top: 15px; background: #fff1f2; border: 1.5px solid #fecdd3; border-left: 5px solid #e11d48; border-radius: 8px; padding: 16px 20px; color: #9f1239;">
+                    <div style="font-weight: 700; font-size: 15px; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
+                        <span>🔒 Application Locked — Ineligible for Refund</span>
+                        <a href="javascript:void(0)" onclick="unlockStudentAccount('<%= student.reg_number %>')" style="font-size: 12px; color: #2563eb; text-decoration: underline; font-weight: 600;">Mistake? Unlock Account</a>
+                    </div>
+                    <div style="font-size: 13.5px; line-height: 1.5;">
+                        Account (<%= student.reg_number %>) indicated no school fees were paid prior to NELFUND disbursement. Refund application is disabled for this account.
+                    </div>
                 </div>
             </div>
         </div>
         <% } %>
     </div>
+
+<!-- Custom System Ineligibility Modal -->
+<div id="ineligibleModal" class="modal" style="z-index: 9999;">
+    <div class="modal-box" style="max-width: 480px; text-align: center; padding: 28px 24px;">
+        <div style="width: 56px; height: 56px; background: #fff1f2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; border: 2px solid #fecdd3;">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#e11d48" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m0 -10.036A9 9 0 1 0 21 12.003A9 9 0 0 0 12 1.964zm0 13.036h.01"/></svg>
+        </div>
+        <h3 style="color: #1e293b; font-size: 19px; font-weight: 700; margin-bottom: 8px;">Confirm Refund Eligibility</h3>
+        <div style="color: #475569; font-size: 13.5px; line-height: 1.6; margin-bottom: 20px; text-align: left; background: #f8fafc; padding: 14px 16px; border-radius: 8px; border: 1px solid #e2e8f0;">
+            Did you personally pay your school fees before NELFUND disbursed your loan?<br><br>
+            • If <strong>YES</strong> (you paid fees yourself), click below to apply for your refund.<br>
+            • If <strong>NO</strong> (you did not pay fees), click confirm to disable refund applications for <strong><%= student.reg_number %></strong>.
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <a href="/student/refund-request" class="btn" style="width: 100%; padding: 12px; font-size: 14px; font-weight: 700; background: #152c5b; color: white; border: none; border-radius: 8px; text-decoration: none; text-align: center;">
+                ✅ I Paid My Fees — Apply for Refund
+            </a>
+            <button type="button" class="btn" onclick="confirmIneligibleLock('<%= student.reg_number %>')" style="width: 100%; padding: 11px; font-size: 13.5px; font-weight: 600; background: #fff1f2; color: #e11d48; border: 1.5px solid #fecdd3; border-radius: 8px; cursor: pointer;">
+                🔒 Confirm — I Did Not Pay (Lock Access)
+            </button>
+            <button type="button" onclick="closeIneligibleModal()" style="background: none; border: none; font-size: 12.5px; color: #64748b; cursor: pointer; margin-top: 4px; text-decoration: underline;">
+                Cancel / Go Back
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    var currentReg = '<%= student.reg_number %>';
+    var lockKey = 'student_locked_' + currentReg;
+
+    function triggerIneligibleLock() {
+        document.getElementById('ineligibleModal').classList.add('active');
+    }
+
+    function confirmIneligibleLock(regNum) {
+        sessionStorage.setItem('student_locked_' + regNum, 'true');
+        applyLockUI();
+        closeIneligibleModal();
+    }
+
+    function unlockStudentAccount(regNum) {
+        sessionStorage.removeItem('student_locked_' + regNum);
+        var actions = document.getElementById('ctaActions');
+        var lockedNotice = document.getElementById('lockedNotice');
+        if (actions && lockedNotice) {
+            actions.style.display = 'flex';
+            lockedNotice.style.display = 'none';
+        }
+    }
+
+    function closeIneligibleModal() {
+        document.getElementById('ineligibleModal').classList.remove('active');
+    }
+
+    function applyLockUI() {
+        var actions = document.getElementById('ctaActions');
+        var lockedNotice = document.getElementById('lockedNotice');
+        if (actions && lockedNotice) {
+            actions.style.display = 'none';
+            lockedNotice.style.display = 'block';
+        }
+    }
+
+    // Auto check if THIS specific student account is locked on page load
+    if (sessionStorage.getItem(lockKey) === 'true') {
+        applyLockUI();
+    }
+</script>
 
 <%- include('partials/footer') %>

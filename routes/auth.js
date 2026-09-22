@@ -120,23 +120,92 @@ router.post('/staff/login', async (req, res) => {
     }
 });
 
-// Forgot Password API/POST
-router.post('/forgot-password', async (req, res) => {
-    const { identity, account_type } = req.body; // identity can be email/username/reg_number
+// ─── STEP 1: Verify staff email exists ───────────────────────────────────────
+router.post('/staff/reset-verify-email', async (req, res) => {
+    const { email } = req.body;
+
+    if (!email || !email.trim()) {
+        return res.json({ success: false, message: 'Email address is required.' });
+    }
 
     try {
-        if (account_type === 'staff') {
-            const [staff] = await db.query('SELECT * FROM staff WHERE username = $1 OR email = $1', [identity]);
-            if (staff.length > 0) {
-                await logActivity(staff[0].staff_id, 'FORGOT_PASSWORD_REQUEST', `Password reset request submitted for ${staff[0].username}`, req);
-            }
-            return res.json({ success: true, message: 'Password reset request recorded. Please contact the administrator to reset your credentials.' });
-        } else {
-            return res.json({ success: true, message: 'Please contact the Bursary or ICT department with your matriculation number for verification.' });
+        const [rows] = await db.query(
+            `SELECT staff_id, email, full_name, is_active
+             FROM staff WHERE LOWER(TRIM(email)) = LOWER(TRIM($1))`,
+            [email.trim()]
+        );
+
+        if (rows.length === 0) {
+            return res.json({ success: false, message: 'No staff account found with that email address. Please check and try again.' });
         }
+
+        if (!rows[0].is_active) {
+            return res.json({ success: false, message: 'This account has been deactivated. Please contact the administrator.' });
+        }
+
+        // Email verified — store it in session temporarily so STEP 2 can use it securely
+        req.session.resetEmail = email.trim().toLowerCase();
+
+        return res.json({ success: true });
+
     } catch (error) {
-        console.error('Forgot password error:', error);
-        res.status(500).json({ success: false, message: 'Server error processing request' });
+        console.error('Reset verify email error:', error);
+        return res.status(500).json({ success: false, message: 'Server error. Please try again.' });
+    }
+});
+
+// ─── STEP 2: Save new password (self-service) ────────────────────────────────
+router.post('/staff/reset-password-self', async (req, res) => {
+    const { email, new_password } = req.body;
+
+    if (!email || !new_password) {
+        return res.json({ success: false, message: 'Email and new password are required.' });
+    }
+
+    if (new_password.trim().length < 6) {
+        return res.json({ success: false, message: 'Password must be at least 6 characters long.' });
+    }
+
+    // Security check: email must match what was verified in STEP 1
+    const sessionEmail = req.session.resetEmail;
+    if (!sessionEmail || sessionEmail !== email.trim().toLowerCase()) {
+        return res.json({ success: false, message: 'Session expired or email mismatch. Please restart the reset process.' });
+    }
+
+    try {
+        const [rows] = await db.query(
+            `SELECT staff_id, full_name, username FROM staff
+             WHERE LOWER(TRIM(email)) = LOWER(TRIM($1)) AND is_active = true`,
+            [email.trim()]
+        );
+
+        if (rows.length === 0) {
+            return res.json({ success: false, message: 'Staff account not found or is inactive.' });
+        }
+
+        const staffMember = rows[0];
+        const passwordHash = await bcrypt.hash(new_password.trim(), 10);
+
+        await db.query(
+            `UPDATE staff SET password_hash = $1 WHERE staff_id = $2`,
+            [passwordHash, staffMember.staff_id]
+        );
+
+        // Clear reset session token
+        delete req.session.resetEmail;
+
+        await logActivity(
+            staffMember.staff_id,
+            'SELF_PASSWORD_RESET',
+            `Staff member ${staffMember.full_name} (${staffMember.username}) reset their own password via the Forgot Password flow.`,
+            req
+        );
+
+        return res.json({ success: true });
+
+    } catch (error) {
+        console.error('Self password reset error:', error);
+        return res.status(500).json({ success: false, message: 'Server error updating password. Please try again.' });
     }
 });
 

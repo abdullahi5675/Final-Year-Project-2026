@@ -9,6 +9,41 @@
         min-height: 100vh;
         padding: 30px 20px;
     }
+    .password-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+    .password-input-wrapper input {
+        width: 100%;
+        padding-right: 44px !important;
+    }
+    .btn-eye-toggle {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 5;
+    }
+    .btn-eye-toggle:hover {
+        color: #1e293b;
+    }
+    .btn-eye-toggle svg {
+        width: 20px;
+        height: 20px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+    }
 </style>
 
 <!-- Dual Logo Header -->
@@ -30,10 +65,10 @@
         <div class="alert alert-error"><%= error %></div>
     <% } %>
 
-    <form method="POST" action="/staff/login">
+    <form method="POST" action="/staff/login" onsubmit="handleStaffLoginSubmit(this)">
         <div class="form-group">
             <label for="email">Email Address</label>
-            <input type="text" id="email" name="email" required placeholder="e.g. staff@nelfund.edu or username" autofocus>
+            <input type="text" id="email" name="email" required placeholder="e.g. staff@nelfund.edu" autofocus>
         </div>
         <div class="form-group">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
@@ -47,87 +82,253 @@
                 </button>
             </div>
         </div>
-        <button type="submit" class="btn-submit">Login to Portal &rarr;</button>
+        <button type="submit" class="btn-submit" id="staffSubmitBtn">Login to Portal &rarr;</button>
     </form>
 
-    <div class="footer-note">
-        Authorized NELFUND & Bursary administration only.
-    </div>
+    <div class="footer-note">Authorized NELFUND & Bursary administration only.</div>
     <div class="student-link" style="display: flex; justify-content: space-between; margin-top: 16px; font-size: 13px;">
         <a href="/">&larr; Portal Home Page</a>
         <a href="/student/login">Student Login &rarr;</a>
     </div>
 </div>
 
-<!-- Forgot Password Modal -->
+<!-- ════════════════════════════════════════════════════
+     FORGOT PASSWORD MODAL — 3-Step Self-Service Reset
+     ════════════════════════════════════════════════════ -->
 <div id="forgotModal" class="modal">
-    <div class="modal-box">
+    <div class="modal-box" style="max-width: 430px; width: 100%;">
+
         <div class="modal-title">
-            <span>Staff Password Recovery</span>
+            <span id="forgotModalTitle">Reset Your Password</span>
             <span class="modal-close" onclick="closeForgotModal()">&times;</span>
         </div>
-        <form id="forgotForm" onsubmit="handleForgotSubmit(event)">
-            <p style="font-size: 13.5px; color: #475569; margin-bottom: 16px; line-height: 1.5;">
-                Enter your registered staff email address below to submit a password reset notification to the System Administrator.
+
+        <!-- Shared alert box -->
+        <div id="forgotAlert" style="display:none; padding:11px 14px; border-radius:7px; font-size:13px; margin-bottom:16px; line-height:1.5;"></div>
+
+        <!-- ─── STEP 1: Enter Email ─── -->
+        <div id="forgotStep1">
+            <p style="font-size:13.5px; color:#475569; margin-bottom:18px; line-height:1.6;">
+                Enter the email address registered to your staff account. If it matches, you can set a new password right away — no admin required.
             </p>
-            <div id="forgotAlert" style="display:none; padding:10px; border-radius:6px; font-size:13px; margin-bottom:14px;"></div>
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label class="modal-label" for="forgot_identity">Email Address</label>
-                <input type="email" id="forgot_identity" required placeholder="e.g. staff@nelfund.edu" style="width: 100%; padding: 10px 14px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 14px;">
+            <div style="margin-bottom:16px;">
+                <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">Registered Email Address</label>
+                <input type="email" id="reset_email" placeholder="e.g. staff@nelfund.edu" autocomplete="off"
+                    style="width:100%; padding:10px 14px; border-radius:7px; border:1.5px solid #d1d5db; font-size:14px; box-sizing:border-box; outline:none; font-family:inherit;"
+                    onfocus="this.style.borderColor='#152c5b'" onblur="this.style.borderColor='#d1d5db'">
             </div>
-            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; font-size: 14px; font-weight: 700; background: #152c5b; color: white; border: none; border-radius: 8px; cursor: pointer;">
-                Submit Reset Request
+            <button onclick="verifyResetEmail()" id="btnVerifyEmail"
+                style="width:100%; padding:12px; font-size:14px; font-weight:700; background:#152c5b; color:white; border:none; border-radius:8px; cursor:pointer;">
+                Verify Email &rarr;
             </button>
-        </form>
+        </div>
+
+        <!-- ─── STEP 2: Set New Password ─── -->
+        <div id="forgotStep2" style="display:none;">
+            <div style="font-size:13.5px; color:#166534; background:#f0fdf4; border:1px solid #bbf7d0; padding:11px 14px; border-radius:7px; margin-bottom:18px; line-height:1.5;">
+                ✅ Email verified! Enter and confirm your new password below.
+            </div>
+
+            <div style="margin-bottom:14px;">
+                <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">New Password</label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="reset_new_password" placeholder="At least 6 characters"
+                        style="width:100%; padding:10px 14px; border-radius:7px; border:1.5px solid #d1d5db; font-size:14px; box-sizing:border-box; outline:none; font-family:inherit;"
+                        onfocus="this.style.borderColor='#152c5b'" onblur="this.style.borderColor='#d1d5db'">
+                    <button type="button" class="btn-eye-toggle" onclick="togglePasswordVisibility('reset_new_password', this)" aria-label="Show/hide">
+                        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div style="margin-bottom:22px;">
+                <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">Confirm New Password</label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="reset_confirm_password" placeholder="Repeat your new password"
+                        style="width:100%; padding:10px 14px; border-radius:7px; border:1.5px solid #d1d5db; font-size:14px; box-sizing:border-box; outline:none; font-family:inherit;"
+                        onfocus="this.style.borderColor='#152c5b'" onblur="this.style.borderColor='#d1d5db'">
+                    <button type="button" class="btn-eye-toggle" onclick="togglePasswordVisibility('reset_confirm_password', this)" aria-label="Show/hide">
+                        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px;">
+                <button onclick="forgotGoStep(1)"
+                    style="flex:1; padding:12px; font-size:13.5px; font-weight:600; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; border-radius:8px; cursor:pointer;">
+                    &larr; Back
+                </button>
+                <button onclick="submitNewPassword()" id="btnSavePassword"
+                    style="flex:2; padding:12px; font-size:14px; font-weight:700; background:#152c5b; color:white; border:none; border-radius:8px; cursor:pointer;">
+                    Save New Password
+                </button>
+            </div>
+        </div>
+
+        <!-- ─── STEP 3: Success ─── -->
+        <div id="forgotStep3" style="display:none; text-align:center; padding:12px 0;">
+            <div style="font-size:52px; margin-bottom:14px;">🎉</div>
+            <div style="font-size:17px; font-weight:700; color:#0f172a; margin-bottom:8px;">Password Reset Successful!</div>
+            <p style="font-size:13.5px; color:#475569; margin-bottom:24px; line-height:1.7;">
+                Your password has been updated successfully.<br>You can now log in using your new password.
+            </p>
+            <button onclick="closeForgotModal()"
+                style="width:100%; padding:12px; font-size:14px; font-weight:700; background:#152c5b; color:white; border:none; border-radius:8px; cursor:pointer;">
+                Go to Login
+            </button>
+        </div>
+
     </div>
 </div>
 
 <script>
-    function togglePasswordVisibility(inputId, btn) {
-        const input = document.getElementById(inputId);
-        if (!input) return;
-        if (input.type === 'password') {
-            input.type = 'text';
-            btn.innerHTML = `<svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>`;
+/* ── Eye Toggle ──────────────────────────────────────────────────── */
+function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    if (input.type === 'password') {
+        input.type = 'text';
+        btn.innerHTML = '<svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>';
+    } else {
+        input.type = 'password';
+        btn.innerHTML = '<svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>';
+    }
+}
+
+/* ── Modal helpers ───────────────────────────────────────────────── */
+function openForgotModal() {
+    forgotGoStep(1);
+    hideForgotAlert();
+    document.getElementById('reset_email').value = '';
+    document.getElementById('reset_new_password').value = '';
+    document.getElementById('reset_confirm_password').value = '';
+    document.getElementById('forgotModal').classList.add('active');
+    setTimeout(function(){ document.getElementById('reset_email').focus(); }, 120);
+}
+function closeForgotModal() {
+    document.getElementById('forgotModal').classList.remove('active');
+}
+function forgotGoStep(n) {
+    document.getElementById('forgotStep1').style.display = n === 1 ? '' : 'none';
+    document.getElementById('forgotStep2').style.display = n === 2 ? '' : 'none';
+    document.getElementById('forgotStep3').style.display = n === 3 ? '' : 'none';
+    hideForgotAlert();
+}
+
+/* ── Alert helpers ───────────────────────────────────────────────── */
+function showForgotAlert(msg, type) {
+    var el = document.getElementById('forgotAlert');
+    el.style.display = 'block';
+    if (type === 'error') {
+        el.style.background = '#fef2f2';
+        el.style.color      = '#991b1b';
+        el.style.border     = '1px solid #fecaca';
+    } else {
+        el.style.background = '#fffbeb';
+        el.style.color      = '#92400e';
+        el.style.border     = '1px solid #fde68a';
+    }
+    el.innerText = msg;
+}
+function hideForgotAlert() {
+    document.getElementById('forgotAlert').style.display = 'none';
+}
+
+/* ── STEP 1: Verify email ────────────────────────────────────────── */
+async function verifyResetEmail() {
+    var email = document.getElementById('reset_email').value.trim();
+    if (!email) { showForgotAlert('Please enter your email address.', 'error'); return; }
+
+    var btn = document.getElementById('btnVerifyEmail');
+    btn.disabled = true;
+    btn.textContent = 'Verifying…';
+    hideForgotAlert();
+
+    try {
+        var res  = await fetch('/staff/reset-verify-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email })
+        });
+        var data = await res.json();
+        if (data.success) {
+            forgotGoStep(2);
+            setTimeout(function(){ document.getElementById('reset_new_password').focus(); }, 80);
         } else {
-            input.type = 'password';
-            btn.innerHTML = `<svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`;
+            showForgotAlert(data.message || 'Email address not found. Please check and try again.', 'error');
         }
+    } catch(err) {
+        showForgotAlert('Network error. Please try again.', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Verify Email &rarr;';
+    }
+}
+
+/* ── STEP 2: Save new password ───────────────────────────────────── */
+async function submitNewPassword() {
+    var email   = document.getElementById('reset_email').value.trim();
+    var newPwd  = document.getElementById('reset_new_password').value;
+    var confPwd = document.getElementById('reset_confirm_password').value;
+
+    hideForgotAlert();
+
+    if (!newPwd || newPwd.length < 6) {
+        showForgotAlert('Password must be at least 6 characters long.', 'error'); return;
+    }
+    if (newPwd !== confPwd) {
+        showForgotAlert('Passwords do not match. Please check and try again.', 'error'); return;
     }
 
-    function openForgotModal() {
-        document.getElementById('forgotModal').classList.add('active');
-        document.getElementById('forgotAlert').style.display = 'none';
-    }
-    function closeForgotModal() {
-        document.getElementById('forgotModal').classList.remove('active');
-        document.getElementById('forgot_identity').value = '';
-    }
-    async function handleForgotSubmit(e) {
-        e.preventDefault();
-        const identity = document.getElementById('forgot_identity').value;
-        const alertBox = document.getElementById('forgotAlert');
+    var btn = document.getElementById('btnSavePassword');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
 
-        try {
-            const res = await fetch('/forgot-password', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ identity, account_type: 'staff' })
-            });
-            const data = await res.json();
-            alertBox.style.display = 'block';
-            alertBox.style.background = '#f0fdf4';
-            alertBox.style.color = '#166534';
-            alertBox.style.border = '1px solid #bbf7d0';
-            alertBox.innerText = data.message;
-        } catch (err) {
-            alertBox.style.display = 'block';
-            alertBox.style.background = '#fef2f2';
-            alertBox.style.color = '#991b1b';
-            alertBox.style.border = '1px solid #fecaca';
-            alertBox.innerText = 'Network error. Please try again.';
+    try {
+        var res  = await fetch('/staff/reset-password-self', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, new_password: newPwd })
+        });
+        var data = await res.json();
+        if (data.success) {
+            forgotGoStep(3);
+        } else {
+            showForgotAlert(data.message || 'Failed to update password. Please try again.', 'error');
         }
+    } catch(err) {
+        showForgotAlert('Network error. Please try again.', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Save New Password';
     }
+}
+
+/* ── Enter key shortcuts & submit handler ──────────────────────────── */
+document.addEventListener('DOMContentLoaded', function() {
+    var emailEl = document.getElementById('reset_email');
+    if (emailEl) {
+        emailEl.addEventListener('keydown', function(e){
+            if (e.key === 'Enter') { e.preventDefault(); verifyResetEmail(); }
+        });
+    }
+    var pwdEl = document.getElementById('reset_confirm_password');
+    if (pwdEl) {
+        pwdEl.addEventListener('keydown', function(e){
+            if (e.key === 'Enter') { e.preventDefault(); submitNewPassword(); }
+        });
+    }
+});
+
+function handleStaffLoginSubmit(form) {
+    var btn = document.getElementById('staffSubmitBtn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Authenticating & Logging in...';
+        btn.style.opacity = '0.75';
+        btn.style.cursor = 'not-allowed';
+    }
+}
 </script>
 
 <%- include('partials/footer') %>

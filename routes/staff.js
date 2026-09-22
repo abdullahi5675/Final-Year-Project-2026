@@ -133,34 +133,115 @@ router.get('/dashboard', requireStaffAuth, async (req, res) => {
 // UPLOAD NELFUND APPROVED LIST
 // ─────────────────────────────────────────────────────────────────────────────
 router.get('/upload-list', requireStaffAuth, (req, res) => {
-    res.render('upload-list', { staff: req.session.staff, error: null, success: null });
+    res.render('upload-list', { staff: req.session.staff, error: null, success: null, duplicateWarning: null });
 });
 
 router.post('/upload-list', requireStaffAuth, upload.single('nelfund_file'), async (req, res) => {
     let connection = null;
+    let filePath = req.file ? req.file.path : (req.body ? req.body.temp_file_path : null);
 
     try {
-        connection = await db.getConnection();
-        await connection.beginTransaction();
-
-        if (!req.file) {
+        if (!filePath) {
             throw new Error('Please select a CSV or Excel file to upload');
         }
 
-        const { batch_reference } = req.body;
+        const batch_reference = (req.body.batch_reference || '').trim();
+        const confirm_overwrite = req.body.confirm_overwrite === 'true';
         const staffId = req.session.staff.staff_id;
 
-        const workbook = new ExcelJS.Workbook();
-        await workbook.xlsx.readFile(req.file.path);
-        const worksheet = workbook.worksheets[0];
+        if (!batch_reference) {
+            throw new Error('Batch reference / file identifier is required');
+        }
 
-        const [listResult] = await connection.query(
-            `INSERT INTO nelfund_approved_lists (batch_reference, upload_date, uploaded_by, file_path)
-             VALUES ($1, CURRENT_DATE, $2, $3) RETURNING list_id`,
-            [batch_reference, staffId, req.file.path]
+        connection = await db.getConnection();
+
+        // ── 1. Check if a batch with the same reference already exists in nelfund_approved_lists
+        const [existingLists] = await connection.query(
+            `SELECT nal.*, s.full_name as uploader_name, s.email as uploader_email, s.role as uploader_role
+             FROM nelfund_approved_lists nal
+             LEFT JOIN staff s ON nal.uploaded_by = s.staff_id
+             WHERE LOWER(TRIM(nal.batch_reference)) = LOWER(TRIM($1))
+             ORDER BY nal.list_id DESC
+             LIMIT 1`,
+            [batch_reference]
         );
 
-        const listId = listResult.insertId;
+        // Read Excel file
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.readFile(filePath);
+        const worksheet = workbook.worksheets[0];
+
+        const regNumbers = [];
+        for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber++) {
+            const row = worksheet.getRow(rowNumber);
+            const regNumber = row.getCell(1).value ? row.getCell(1).value.toString().trim() : null;
+            if (regNumber) regNumbers.push(regNumber);
+        }
+
+        // ── 2. Check if students in this file already belong to an existing list
+        let existingStudentBatch = null;
+        if (regNumbers.length > 0) {
+            const [overlapping] = await connection.query(
+                `SELECT DISTINCT nal.list_id, nal.batch_reference, nal.upload_date, nal.uploaded_by,
+                                 s.full_name as uploader_name, s.email as uploader_email, s.role as uploader_role
+                 FROM students st
+                 JOIN nelfund_approved_lists nal ON st.list_id = nal.list_id
+                 LEFT JOIN staff s ON nal.uploaded_by = s.staff_id
+                 WHERE st.reg_number = ANY($1)
+                 LIMIT 1`,
+                [regNumbers]
+            );
+            if (overlapping && overlapping.length > 0) {
+                existingStudentBatch = overlapping[0];
+            }
+        }
+
+        const targetDuplicate = (existingLists && existingLists.length > 0) ? existingLists[0] : existingStudentBatch;
+
+        // If duplicate detected and user hasn't confirmed overwrite yet
+        if (targetDuplicate && !confirm_overwrite) {
+            return res.render('upload-list', {
+                staff: req.session.staff,
+                error: null,
+                success: null,
+                duplicateWarning: {
+                    batchReference: batch_reference,
+                    existingBatchRef: targetDuplicate.batch_reference,
+                    uploaderName: targetDuplicate.uploader_name || 'System User',
+                    uploaderRole: targetDuplicate.uploader_role ? targetDuplicate.uploader_role.toUpperCase() : 'STAFF',
+                    uploaderEmail: targetDuplicate.uploader_email || '',
+                    uploadDate: targetDuplicate.upload_date ? new Date(targetDuplicate.upload_date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'recently',
+                    totalStudents: targetDuplicate.total_students || regNumbers.length,
+                    tempFilePath: filePath,
+                    originalFileName: req.file ? req.file.originalname : 'NELFUND_List.xlsx'
+                }
+            });
+        }
+
+        // ── 3. Process Upload (new or confirmed overwrite)
+        await connection.beginTransaction();
+
+        let listId;
+        let isUpdate = false;
+
+        if (targetDuplicate) {
+            listId = targetDuplicate.list_id;
+            isUpdate = true;
+            await connection.query(
+                `UPDATE nelfund_approved_lists 
+                 SET batch_reference = $1, upload_date = CURRENT_DATE, uploaded_by = $2, file_path = $3
+                 WHERE list_id = $4`,
+                [batch_reference, staffId, filePath, listId]
+            );
+        } else {
+            const [listResult] = await connection.query(
+                `INSERT INTO nelfund_approved_lists (batch_reference, upload_date, uploaded_by, file_path)
+                 VALUES ($1, CURRENT_DATE, $2, $3) RETURNING list_id`,
+                [batch_reference, staffId, filePath]
+            );
+            listId = listResult.insertId;
+        }
+
         let studentCount = 0;
 
         for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber++) {
@@ -194,15 +275,16 @@ router.post('/upload-list', requireStaffAuth, upload.single('nelfund_file'), asy
 
         await logActivity(
             staffId,
-            'NELFUND_UPLOAD',
-            `Uploaded NELFUND list batch '${batch_reference}' containing ${studentCount} students.`,
+            isUpdate ? 'NELFUND_UPLOAD_OVERWRITE' : 'NELFUND_UPLOAD',
+            `${isUpdate ? 'Updated/Overwrote' : 'Uploaded'} NELFUND list batch '${batch_reference}' containing ${studentCount} students.`,
             req
         );
 
         res.render('upload-list', {
             staff: req.session.staff,
             error: null,
-            success: `Successfully uploaded ${studentCount} students for batch '${batch_reference}'`
+            duplicateWarning: null,
+            success: `Successfully ${isUpdate ? 'updated and merged' : 'uploaded'} ${studentCount} student records for batch '${batch_reference}'!`
         });
 
     } catch (error) {
@@ -210,9 +292,11 @@ router.post('/upload-list', requireStaffAuth, upload.single('nelfund_file'), asy
             try { await connection.rollback(); } catch (rbErr) { console.error('Rollback error:', rbErr); }
         }
         console.error('Upload error:', error);
+
         res.render('upload-list', {
             staff: req.session.staff,
             error: error.message,
+            duplicateWarning: null,
             success: null
         });
     } finally {
