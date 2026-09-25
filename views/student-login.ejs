@@ -9,6 +9,41 @@
         min-height: 100vh;
         padding: 30px 20px;
     }
+    .password-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+    }
+    .password-input-wrapper input {
+        width: 100%;
+        padding-right: 44px !important;
+    }
+    .btn-eye-toggle {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+        color: #64748b;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 5;
+    }
+    .btn-eye-toggle:hover {
+        color: #1e293b;
+    }
+    .btn-eye-toggle svg {
+        width: 20px;
+        height: 20px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+    }
 </style>
 
 <!-- Dual Logo Header -->
@@ -23,23 +58,81 @@
 
 <!-- Login Card -->
 <div class="login-card">
-    <div class="card-title">Student Portal Login</div>
-    <div class="card-subtitle">Enter your Registration/Matriculation Number to check eligibility and submit refund claims</div>
-
-    <% if (error) { %>
-        <div class="alert alert-error"><%= error %></div>
-    <% } %>
-
-    <form method="POST" action="/login" onsubmit="handleLoginSubmit(this)">
-        <div class="form-group">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
-                <label for="reg_number" style="margin-bottom: 0;">Registration Number</label>
-                <a href="javascript:void(0)" onclick="openForgotModal()" style="font-size: 12px; color: #2563eb; text-decoration: none; font-weight: 600;">Login Issues?</a>
-            </div>
-            <input type="text" id="reg_number" name="reg_number" required placeholder="e.g. FUTB/CST/22/1001" autofocus>
+    <% if (typeof setupMode !== 'undefined' && setupMode) { %>
+        <!-- ─── FIRST TIME SETUP VIEW ─── -->
+        <div class="card-title">Create Your Password</div>
+        <div class="card-subtitle">
+            Welcome, <strong><%= studentInfo ? studentInfo.full_name : '' %></strong>! Since this is your first time logging in, please set up a password for your account.
         </div>
-        <button type="submit" class="btn-submit" id="loginSubmitBtn">Login to Student Portal &rarr;</button>
-    </form>
+
+        <% if (error) { %>
+            <div class="alert alert-error"><%= error %></div>
+        <% } %>
+
+        <form method="POST" action="/login" onsubmit="handleLoginSubmit(this)">
+            <input type="hidden" name="reg_number" value="<%= reg_number %>">
+
+            <div class="form-group">
+                <label>Registration Number</label>
+                <input type="text" value="<%= reg_number %>" disabled style="background:#f1f5f9; color:#475569; font-weight:600; cursor:not-allowed;">
+            </div>
+
+            <div class="form-group">
+                <label for="new_password">Create Password</label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="new_password" name="new_password" required placeholder="Minimum 6 characters" autofocus>
+                    <button type="button" class="btn-eye-toggle" onclick="togglePasswordVisibility('new_password', this)" aria-label="Toggle password visibility">
+                        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirm_password">Confirm Password</label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="confirm_password" name="confirm_password" required placeholder="Repeat your password">
+                    <button type="button" class="btn-eye-toggle" onclick="togglePasswordVisibility('confirm_password', this)" aria-label="Toggle password visibility">
+                        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="loginSubmitBtn">Save Password & Continue &rarr;</button>
+        </form>
+    <% } else { %>
+        <!-- ─── STANDARD LOGIN VIEW ─── -->
+        <div class="card-title">Student Portal Login</div>
+        <div class="card-subtitle">Enter your Registration Number and Password to access your account</div>
+
+        <% if (error) { %>
+            <div class="alert alert-error"><%= error %></div>
+        <% } %>
+
+        <form method="POST" action="/login" onsubmit="handleLoginSubmit(this)">
+            <div class="form-group">
+                <label for="reg_number">Registration Number</label>
+                <input type="text" id="reg_number" name="reg_number" required placeholder="e.g. FUTB/CST/22/1001" value="<%= typeof reg_number !== 'undefined' ? reg_number : '' %>" autofocus>
+            </div>
+
+            <div class="form-group">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <label for="password" style="margin-bottom: 0;">Password</label>
+                    <a href="javascript:void(0)" onclick="openForgotModal()" style="font-size: 12px; color: #2563eb; text-decoration: none; font-weight: 600;">Forgot Password?</a>
+                </div>
+                <div class="password-input-wrapper">
+                    <input type="password" id="password" name="password" placeholder="Enter your password (or leave empty if first time)">
+                    <button type="button" class="btn-eye-toggle" onclick="togglePasswordVisibility('password', this)" aria-label="Toggle password visibility">
+                        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    </button>
+                </div>
+                <small style="color: #64748b; font-size: 11.5px; margin-top: 4px; display: block;">
+                    * First time logging in? Enter your Registration Number to set your password.
+                </small>
+            </div>
+
+            <button type="submit" class="btn-submit" id="loginSubmitBtn">Login to Student Portal &rarr;</button>
+        </form>
+    <% } %>
 
     <div class="footer-note">
         Only students listed in the official university NELFUND disbursement batch can access this portal.
@@ -50,35 +143,220 @@
     </div>
 </div>
 
-<!-- Student Verification Help Modal -->
+<!-- ════════════════════════════════════════════════════
+     FORGOT PASSWORD MODAL — 3-Step Self-Service Reset
+     ════════════════════════════════════════════════════ -->
 <div id="forgotModal" class="modal">
-    <div class="modal-box">
+    <div class="modal-box" style="max-width: 430px; width: 100%;">
         <div class="modal-title">
-            <span>Student Verification Help</span>
+            <span id="forgotModalTitle">Reset Student Password</span>
             <span class="modal-close" onclick="closeForgotModal()">&times;</span>
         </div>
-        <div style="font-size: 14px; color: #334155; line-height: 1.6;">
-            <p style="margin-bottom: 12px;">
-                If your registration number is not being recognized by the portal, please verify that:
+
+        <!-- Shared alert box -->
+        <div id="forgotAlert" style="display:none; padding:11px 14px; border-radius:7px; font-size:13px; margin-bottom:16px; line-height:1.5;"></div>
+
+        <!-- ─── STEP 1: Enter Registration Number ─── -->
+        <div id="forgotStep1">
+            <p style="font-size:13.5px; color:#475569; margin-bottom:18px; line-height:1.6;">
+                Enter your Registration/Matriculation Number below. If it exists in the approved list, you can create a new password immediately.
             </p>
-            <ul style="padding-left: 20px; margin-bottom: 16px;">
-                <li>Your name was included in the official approved NELFUND list released by the university.</li>
-                <li>You entered your exact Registration Number without extra spaces.</li>
-            </ul>
-            <p style="color: #64748b; font-size: 13px;">
-                For support, contact the Student Affairs or ICT Helpdesk at <strong style="color:#152c5b;">support@futb.edu.ng</strong> with your full name and matriculation details.
+            <div style="margin-bottom:16px;">
+                <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">Registration Number</label>
+                <input type="text" id="reset_reg_number" placeholder="e.g. FUTB/CST/22/1001" autocomplete="off"
+                    style="width:100%; padding:10px 14px; border-radius:7px; border:1.5px solid #d1d5db; font-size:14px; box-sizing:border-box; outline:none; font-family:inherit;"
+                    onfocus="this.style.borderColor='#152c5b'" onblur="this.style.borderColor='#d1d5db'">
+            </div>
+            <button onclick="verifyResetRegNumber()" id="btnVerifyReg"
+                style="width:100%; padding:12px; font-size:14px; font-weight:700; background:#152c5b; color:white; border:none; border-radius:8px; cursor:pointer;">
+                Verify Registration Number &rarr;
+            </button>
+        </div>
+
+        <!-- ─── STEP 2: Set New Password ─── -->
+        <div id="forgotStep2" style="display:none;">
+            <div style="font-size:13.5px; color:#166534; background:#f0fdf4; border:1px solid #bbf7d0; padding:11px 14px; border-radius:7px; margin-bottom:18px; line-height:1.5;">
+                ✅ Account verified for <strong id="resetStudentNameText"></strong>! Create your new password below.
+            </div>
+
+            <div style="margin-bottom:14px;">
+                <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">New Password</label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="reset_new_password" placeholder="Minimum 6 characters"
+                        style="width:100%; padding:10px 14px; border-radius:7px; border:1.5px solid #d1d5db; font-size:14px; box-sizing:border-box; outline:none; font-family:inherit;"
+                        onfocus="this.style.borderColor='#152c5b'" onblur="this.style.borderColor='#d1d5db'">
+                    <button type="button" class="btn-eye-toggle" onclick="togglePasswordVisibility('reset_new_password', this)" aria-label="Show/hide password">
+                        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div style="margin-bottom:22px;">
+                <label style="display:block; font-size:13px; font-weight:600; color:#374151; margin-bottom:6px;">Confirm New Password</label>
+                <div class="password-input-wrapper">
+                    <input type="password" id="reset_confirm_password" placeholder="Repeat your new password"
+                        style="width:100%; padding:10px 14px; border-radius:7px; border:1.5px solid #d1d5db; font-size:14px; box-sizing:border-box; outline:none; font-family:inherit;"
+                        onfocus="this.style.borderColor='#152c5b'" onblur="this.style.borderColor='#d1d5db'">
+                    <button type="button" class="btn-eye-toggle" onclick="togglePasswordVisibility('reset_confirm_password', this)" aria-label="Show/hide password">
+                        <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                    </button>
+                </div>
+            </div>
+
+            <button onclick="submitStudentSelfReset()" id="btnSubmitReset"
+                style="width:100%; padding:12px; font-size:14px; font-weight:700; background:#152c5b; color:white; border:none; border-radius:8px; cursor:pointer;">
+                Save New Password & Login &rarr;
+            </button>
+        </div>
+
+        <!-- ─── STEP 3: Success Confirmation ─── -->
+        <div id="forgotStep3" style="display:none; text-align:center; padding:10px 0;">
+            <div style="font-size:44px; margin-bottom:12px;">🎉</div>
+            <h4 style="font-size:17px; font-weight:700; color:#1e293b; margin-bottom:8px;">Password Reset Successful!</h4>
+            <p style="font-size:13.5px; color:#475569; margin-bottom:24px; line-height:1.5;">
+                Your password has been updated. You can now log in to your student portal account.
             </p>
+            <button onclick="closeForgotModal()"
+                style="width:100%; padding:12px; font-size:14px; font-weight:700; background:#152c5b; color:white; border:none; border-radius:8px; cursor:pointer;">
+                Back to Login Page
+            </button>
         </div>
     </div>
 </div>
 
 <script>
+    var verifiedRegNumber = '';
+
+    function togglePasswordVisibility(inputId, btn) {
+        var input = document.getElementById(inputId);
+        if (!input) return;
+        var svg = btn.querySelector('svg');
+        if (input.type === 'password') {
+            input.type = 'text';
+            svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />';
+        } else {
+            input.type = 'password';
+            svg.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />';
+        }
+    }
+
     function openForgotModal() {
         document.getElementById('forgotModal').classList.add('active');
+        showForgotStep(1);
     }
+
     function closeForgotModal() {
         document.getElementById('forgotModal').classList.remove('active');
+        hideForgotAlert();
     }
+
+    function showForgotAlert(msg, isSuccess) {
+        var alertEl = document.getElementById('forgotAlert');
+        alertEl.style.display = 'block';
+        alertEl.style.background = isSuccess ? '#f0fdf4' : '#fef2f2';
+        alertEl.style.color = isSuccess ? '#166534' : '#991b1b';
+        alertEl.style.border = isSuccess ? '1px solid #bbf7d0' : '1px solid #fecaca';
+        alertEl.innerText = msg;
+    }
+
+    function hideForgotAlert() {
+        var alertEl = document.getElementById('forgotAlert');
+        alertEl.style.display = 'none';
+    }
+
+    function showForgotStep(stepNum) {
+        hideForgotAlert();
+        document.getElementById('forgotStep1').style.display = (stepNum === 1) ? 'block' : 'none';
+        document.getElementById('forgotStep2').style.display = (stepNum === 2) ? 'block' : 'none';
+        document.getElementById('forgotStep3').style.display = (stepNum === 3) ? 'block' : 'none';
+    }
+
+    async function verifyResetRegNumber() {
+        var input = document.getElementById('reset_reg_number');
+        var regVal = input ? input.value.trim() : '';
+
+        if (!regVal) {
+            showForgotAlert('Please enter your Registration Number.', false);
+            return;
+        }
+
+        var btn = document.getElementById('btnVerifyReg');
+        btn.disabled = true;
+        btn.innerText = '⏳ Verifying...';
+
+        try {
+            var res = await fetch('/student/reset-verify-reg', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reg_number: regVal })
+            });
+            var data = await res.json();
+
+            btn.disabled = false;
+            btn.innerHTML = 'Verify Registration Number &rarr;';
+
+            if (!data.success) {
+                showForgotAlert(data.message, false);
+                return;
+            }
+
+            verifiedRegNumber = data.reg_number;
+            document.getElementById('resetStudentNameText').innerText = data.full_name;
+            showForgotStep(2);
+
+        } catch (e) {
+            btn.disabled = false;
+            btn.innerHTML = 'Verify Registration Number &rarr;';
+            showForgotAlert('Network error. Please try again.', false);
+        }
+    }
+
+    async function submitStudentSelfReset() {
+        var p1 = document.getElementById('reset_new_password').value;
+        var p2 = document.getElementById('reset_confirm_password').value;
+
+        if (!p1 || p1.trim().length < 6) {
+            showForgotAlert('Password must be at least 6 characters long.', false);
+            return;
+        }
+
+        if (p1 !== p2) {
+            showForgotAlert('Passwords do not match. Please re-enter.', false);
+            return;
+        }
+
+        var btn = document.getElementById('btnSubmitReset');
+        btn.disabled = true;
+        btn.innerText = '⏳ Updating Password...';
+
+        try {
+            var res = await fetch('/student/reset-password-self', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    reg_number: verifiedRegNumber,
+                    new_password: p1.trim()
+                })
+            });
+            var data = await res.json();
+
+            btn.disabled = false;
+            btn.innerHTML = 'Save New Password & Login &rarr;';
+
+            if (!data.success) {
+                showForgotAlert(data.message, false);
+                return;
+            }
+
+            showForgotStep(3);
+
+        } catch (e) {
+            btn.disabled = false;
+            btn.innerHTML = 'Save New Password & Login &rarr;';
+            showForgotAlert('Network error. Please try again.', false);
+        }
+    }
+
     function handleLoginSubmit(form) {
         var btn = document.getElementById('loginSubmitBtn');
         if (btn) {

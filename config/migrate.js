@@ -42,13 +42,14 @@ async function migrate() {
 
             -- 3. STUDENTS
             CREATE TABLE IF NOT EXISTS students (
-                reg_number  VARCHAR(50)  PRIMARY KEY,
-                full_name   VARCHAR(100) NOT NULL,
-                department  VARCHAR(100),
-                level       VARCHAR(20),
-                list_id     INT          NOT NULL,
-                is_active   BOOLEAN      DEFAULT TRUE,
-                date_added  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+                reg_number    VARCHAR(50)  PRIMARY KEY,
+                full_name     VARCHAR(100) NOT NULL,
+                department    VARCHAR(100),
+                level         VARCHAR(20),
+                list_id       INT          NOT NULL,
+                password_hash VARCHAR(255) NULL,
+                is_active     BOOLEAN      DEFAULT TRUE,
+                date_added    TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (list_id) REFERENCES nelfund_approved_lists(list_id)
             );
 
@@ -151,6 +152,8 @@ async function migrate() {
             ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS reg_number   VARCHAR(50)  NULL;
             ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS actor_type   VARCHAR(10)  DEFAULT 'staff';
             ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS student_name VARCHAR(100) NULL;
+
+            ALTER TABLE students ADD COLUMN IF NOT EXISTS password_hash VARCHAR(255) NULL;
 
             -- 11. INDEXES
             CREATE INDEX IF NOT EXISTS idx_student_list     ON students(list_id);
